@@ -1,87 +1,86 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Drawlist</title>
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      background: #f0f0f0;
-      font-family: sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Drawlist</title>
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    background: #f0f0f0;
+    font-family: sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100vh;
+    justify-content: center;
+  }
 
-    .center-block {
-      text-align: center;
-      margin-top: 100px;
-    }
+  .center-block {
+    text-align: center;
+    animation: fadeIn 2s forwards;
+  }
 
-    .fade-in-btn {
-      padding: 10px 20px;
-      font-size: 18px;
-      background-color: #4CAF50;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
 
-    canvas {
-      display: none; /* скрыто до нажатия */
-      margin-top: 30px;
-      width: 100%;
-      max-width: 800px;
-      aspect-ratio: 4 / 3;
-      border: 2px solid #333;
-      background: white;
-      touch-action: none;
-    }
+  .fade-in-btn {
+    opacity: 0;
+    animation: fadeIn 2s forwards;
+    padding: 10px 20px;
+    font-size: 18px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 20px;
+  }
 
-    #clearBtn {
-      display: none;
-      margin-top: 15px;
-      padding: 10px 20px;
-      font-size: 16px;
-      border: none;
-      border-radius: 5px;
-      background-color: #e74c3c;
-      color: white;
-      cursor: pointer;
-    }
+  canvas {
+    display: none;
+    margin-top: 30px;
+    width: 90vw;
+    max-width: 800px;
+    aspect-ratio: 4 / 3;
+    border: 2px solid #333;
+    background: white;
+    touch-action: none;
+  }
 
-    @media (max-width: 600px) {
-      .fade-in-btn, #clearBtn {
-        font-size: 14px;
-        padding: 8px 16px;
-      }
-    }
-  </style>
+  #clearBtn {
+    display: none;
+    margin-top: 15px;
+    padding: 10px 20px;
+    font-size: 16px;
+    border: none;
+    border-radius: 5px;
+    background-color: #e74c3c;
+    color: white;
+    cursor: pointer;
+  }
+</style>
 </head>
 <body>
 
-<div class="center-block">
+<div class="center-block" id="intro">
   <p>привет</p>
-  <button class="fade-in-btn" onclick="startDrawing()">рисовать</button>
+  <button class="fade-in-btn" id="drawBtn">рисовать</button>
 </div>
 
 <canvas id="canvas"></canvas>
-<button id="clearBtn" onclick="clearCanvas()">Очистить</button>
+<button id="clearBtn">Очистить</button>
 
 <script>
+  const intro = document.getElementById('intro');
+  const drawBtn = document.getElementById('drawBtn');
   const canvas = document.getElementById('canvas');
-  const ctx = canvas.getContext('2d');
   const clearBtn = document.getElementById('clearBtn');
+  const ctx = canvas.getContext('2d');
   let drawing = false;
-
-  function startDrawing() {
-    canvas.style.display = 'block';
-    clearBtn.style.display = 'inline-block';
-    resizeCanvas();
-  }
 
   function resizeCanvas() {
     canvas.width = canvas.clientWidth;
@@ -89,6 +88,18 @@
   }
 
   window.addEventListener('resize', resizeCanvas);
+  window.addEventListener('load', resizeCanvas);
+
+  drawBtn.addEventListener('click', () => {
+    // Скрываем приветствие и кнопку
+    intro.style.display = 'none';
+
+    // Показываем холст и кнопку очистки
+    canvas.style.display = 'block';
+    clearBtn.style.display = 'inline-block';
+
+    resizeCanvas();
+  });
 
   canvas.addEventListener('mousedown', () => {
     drawing = true;
@@ -98,8 +109,20 @@
     drawing = false;
     ctx.beginPath();
   });
-  canvas.addEventListener('mousemove', draw);
+  canvas.addEventListener('mouseout', () => {
+    drawing = false;
+    ctx.beginPath();
+  });
 
+  canvas.addEventListener('mousemove', (e) => {
+    if (!drawing) return;
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    drawAt(x, y);
+  });
+
+  // Сенсорные события для мобильных
   canvas.addEventListener('touchstart', (e) => {
     e.preventDefault();
     drawing = true;
@@ -117,14 +140,10 @@
     if (!drawing) return;
     const touch = e.touches[0];
     const rect = canvas.getBoundingClientRect();
-    drawAt(touch.clientX - rect.left, touch.clientY - rect.top);
+    const x = touch.clientX - rect.left;
+    const y = touch.clientY - rect.top;
+    drawAt(x, y);
   });
-
-  function draw(e) {
-    if (!drawing) return;
-    const rect = canvas.getBoundingClientRect();
-    drawAt(e.clientX - rect.left, e.clientY - rect.top);
-  }
 
   function drawAt(x, y) {
     ctx.lineWidth = 2;
@@ -137,9 +156,9 @@
     ctx.moveTo(x, y);
   }
 
-  function clearCanvas() {
+  clearBtn.addEventListener('click', () => {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-  }
+  });
 </script>
 
 </body>
