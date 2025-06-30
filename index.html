@@ -1,81 +1,87 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Drawlist</title>
-<style>
-  body {
-    margin: 0;
-    height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background-color: #f9f9f9;
-  }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Drawlist</title>
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: #f9f9f9;
+      flex-direction: column;
+    }
 
-  .center-block {
-    text-align: center;
-  }
+    .center-block {
+      text-align: center;
+    }
 
-  .center-block p {
-    font-size: 60px;      /* увеличенный размер */
-    font-weight: 700;     /* жирный шрифт */
-    font-family: sans-serif;
-    opacity: 0;
-    animation: fadeIn 2s ease-in-out forwards;
-    margin-bottom: 20px;
-  }
-
-  @keyframes fadeIn {
-    from {
+    .center-block p {
+      font-size: 60px;
+      font-weight: 700;
+      font-family: sans-serif;
       opacity: 0;
-      transform: translateY(30px);
+      animation: fadeIn 2s ease-in-out forwards;
+      margin-bottom: 20px;
     }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
 
-  button {
-    padding: 10px 20px;
-    font-size: 18px;
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    opacity: 0;
-    animation: fadeIn 2s forwards;
-    transition: background-color 0.3s ease;
-  }
-
-  button:hover {
-    background-color: #45a049;
-  }
-
-  canvas {
-    display: none;
-    width: 100%;
-    max-width: 800px;
-    height: auto;
-    border: 2px solid #333;
-    background: white;
-  }
-
-  @media (max-width: 600px) {
-    canvas {
-      max-width: 100%;
-      height: auto;
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     button {
-      font-size: 14px;
-      padding: 8px 16px;
+      padding: 10px 20px;
+      font-size: 18px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      opacity: 0;
+      animation: fadeIn 2s forwards;
+      transition: background-color 0.3s ease;
+      margin-top: 20px;
     }
-  }
-</style>
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    #drawArea {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    canvas {
+      width: 90vw;
+      max-width: 800px;
+      border: 2px solid #333;
+      background: white;
+      touch-action: none;
+    }
+
+    @media (max-width: 600px) {
+      canvas {
+        max-width: 100%;
+      }
+
+      button {
+        font-size: 14px;
+        padding: 8px 16px;
+      }
+    }
+  </style>
 </head>
 <body>
 
@@ -84,41 +90,44 @@
   <button id="drawBtn">рисовать</button>
 </div>
 
-<div id="drawArea" style="display: none; flex-direction: column; align-items: center;">
+<div id="drawArea">
   <canvas id="canvas"></canvas>
   <button id="clearBtn">Очистить</button>
 </div>
 
 <script>
-  const drawArea = document.getElementById('drawArea');
   const intro = document.getElementById('intro');
   const drawBtn = document.getElementById('drawBtn');
+  const drawArea = document.getElementById('drawArea');
   const canvas = document.getElementById('canvas');
   const clearBtn = document.getElementById('clearBtn');
   const ctx = canvas.getContext('2d');
   let drawing = false;
 
   function resizeCanvas() {
-  canvas.width = canvas.clientWidth;
-  canvas.height = canvas.clientWidth * 3 / 4; // высота = ширина * 3/4
-}
+    canvas.width = canvas.clientWidth;
+    canvas.height = canvas.clientWidth * 3 / 4;
+  }
+
   window.addEventListener('resize', resizeCanvas);
   window.addEventListener('load', resizeCanvas);
 
-drawBtn.addEventListener('click', () => {
-  intro.style.display = 'none';
-  drawArea.style.display = 'flex';
-  resizeCanvas();
-});
+  drawBtn.addEventListener('click', () => {
+    intro.style.display = 'none';
+    drawArea.style.display = 'flex';
+    resizeCanvas();
+  });
 
   canvas.addEventListener('mousedown', () => {
     drawing = true;
     ctx.beginPath();
   });
+
   canvas.addEventListener('mouseup', () => {
     drawing = false;
     ctx.beginPath();
   });
+
   canvas.addEventListener('mouseout', () => {
     drawing = false;
     ctx.beginPath();
@@ -127,9 +136,7 @@ drawBtn.addEventListener('click', () => {
   canvas.addEventListener('mousemove', (e) => {
     if (!drawing) return;
     const rect = canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    drawAt(x, y);
+    drawAt(e.clientX - rect.left, e.clientY - rect.top);
   });
 
   canvas.addEventListener('touchstart', (e) => {
@@ -149,16 +156,13 @@ drawBtn.addEventListener('click', () => {
     if (!drawing) return;
     const touch = e.touches[0];
     const rect = canvas.getBoundingClientRect();
-    const x = touch.clientX - rect.left;
-    const y = touch.clientY - rect.top;
-    drawAt(x, y);
+    drawAt(touch.clientX - rect.left, touch.clientY - rect.top);
   });
 
   function drawAt(x, y) {
     ctx.lineWidth = 2;
     ctx.lineCap = 'round';
     ctx.strokeStyle = '#000';
-
     ctx.lineTo(x, y);
     ctx.stroke();
     ctx.beginPath();
