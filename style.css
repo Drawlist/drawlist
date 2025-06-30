@@ -85,3 +85,9 @@ button {
     opacity: 1; /* к конечному состоянию — полностью видимая */
   }
 }
+
+canvas {
+  width: 100%;
+  max-width: 800px;
+  height: auto;
+}
