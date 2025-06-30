@@ -1,15 +1,47 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <title>Drawlist</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Fade In Button</title>
+<style>
+  body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    margin: 0;
+  }
+
+  p {
+    margin-bottom: 20px;
+    font-size: 24px;
+  }
+
+  button {
+    opacity: 0; /* изначально прозрачная */
+    animation: fadeIn 2s forwards;
+    padding: 10px 20px;
+    font-size: 18px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+
+  @keyframes fadeIn {
+    to {
+      opacity: 1;
+    }
+  }
+</style>
 </head>
 <body>
-  
 
+<p>привет</p>
+<button>рисовать</button>
 
-<div class="center-block">
-  <p>привет</p>
-  <button>рисовать</button>
-</div>
+</body>
+</html>
