@@ -90,6 +90,7 @@
 </div>
 
 <script>
+  const drawArea = document.getElementById('drawArea');
   const intro = document.getElementById('intro');
   const drawBtn = document.getElementById('drawBtn');
   const canvas = document.getElementById('canvas');
@@ -104,12 +105,11 @@
   window.addEventListener('resize', resizeCanvas);
   window.addEventListener('load', resizeCanvas);
 
-  drawBtn.addEventListener('click', () => {
-    intro.style.display = 'none';
-    canvas.style.display = 'block';
-    clearBtn.style.display = 'inline-block';
-    resizeCanvas();
-  });
+drawBtn.addEventListener('click', () => {
+  intro.style.display = 'none';
+  drawArea.style.display = 'flex';
+  resizeCanvas();
+});
 
   canvas.addEventListener('mousedown', () => {
     drawing = true;
