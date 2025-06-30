@@ -1,13 +1,26 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta charset="UTF-8" />
-  <title>Главная</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Drawlist</title>
   <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: #f0f0f0;
+      font-family: sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .center-block {
+      text-align: center;
+      margin-top: 100px;
+    }
+
     .fade-in-btn {
-      opacity: 0;
-      animation: fadeIn 2s forwards;
       padding: 10px 20px;
       font-size: 18px;
       background-color: #4CAF50;
@@ -16,25 +29,115 @@
       border-radius: 5px;
       cursor: pointer;
     }
-    @keyframes fadeIn {
-      to {
-        opacity: 1;
-      }
+
+    canvas {
+      display: none; /* скрыто по умолчанию */
+      margin-top: 30px;
+      width: 100%;
+      max-width: 800px;
+      aspect-ratio: 4 / 3;
+      border: 2px solid #333;
+      background: white;
+      touch-action: none;
     }
-    .center-block {
-      text-align: center;
-      margin-top: 100px;
-    }
-    .center-block p {
-      margin-bottom: 20px;
-      font-size: 24px;
+
+    #clearBtn {
+      display: none;
+      margin-top: 15px;
+      padding: 10px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 5px;
+      background-color: #e74c3c;
+      color: white;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
-  <div class="center-block">
-    <p>привет</p>
-    <a href="draw.html"><button class="fade-in-btn">рисовать</button></a>
-  </div>
+
+<div class="center-block">
+  <p>привет</p>
+  <button class="fade-in-btn" onclick="startDrawing()">рисовать</button>
+</div>
+
+<canvas id="canvas"></canvas>
+<button id="clearBtn" onclick="clearCanvas()">Очистить</button>
+
+<script>
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+  const clearBtn = document.getElementById('clearBtn');
+  let drawing = false;
+
+  function startDrawing() {
+    canvas.style.display = 'block';
+    clearBtn.style.display = 'inline-block';
+    resizeCanvas();
+  }
+
+  function resizeCanvas() {
+    canvas.width = canvas.clientWidth;
+    canvas.height = canvas.clientHeight;
+  }
+
+  window.addEventListener('resize', resizeCanvas);
+
+  canvas.addEventListener('mousedown', () => {
+    drawing = true;
+    ctx.beginPath();
+  });
+  canvas.addEventListener('mouseup', () => {
+    drawing = false;
+    ctx.beginPath();
+  });
+  canvas.addEventListener('mousemove', draw);
+
+  canvas.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    drawing = true;
+    ctx.beginPath();
+  });
+
+  canvas.addEventListener('touchend', (e) => {
+    e.preventDefault();
+    drawing = false;
+    ctx.beginPath();
+  });
+
+  canvas.addEventListener('touchmove', (e) => {
+    e.preventDefault();
+    if (!drawing) return;
+    const touch = e.touches[0];
+    const rect = canvas.getBoundingClientRect();
+    const x = touch.clientX - rect.left;
+    const y = touch.clientY - rect.top;
+    drawAt(x, y);
+  });
+
+  function draw(e) {
+    if (!drawing) return;
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    drawAt(x, y);
+  }
+
+  function drawAt(x, y) {
+    ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
+    ctx.strokeStyle = '#000';
+
+    ctx.lineTo(x, y);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+  }
+
+  function clearCanvas() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }
+</script>
+
 </body>
 </html>
