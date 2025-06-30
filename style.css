@@ -67,3 +67,21 @@ button {
 button:hover {
   background-color: #45a049; /* чуть темнее при наведении */
 }
+
+button {
+  opacity: 0; /* изначально невидимая */
+  animation: fadeIn 2s forwards; /* запускаем анимацию fadeIn длительностью 2 секунды */
+  padding: 10px 20px;
+  font-size: 18px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+@keyframes fadeIn {
+  to {
+    opacity: 1; /* к конечному состоянию — полностью видимая */
+  }
+}
