@@ -95,8 +95,18 @@ button {
   <button id="drawBtn">рисовать</button>
 </div>
 
-<div id="drawArea">
+<div id="drawArea" style="display: none; flex-direction: column; align-items: center;">
   <canvas id="canvas"></canvas>
+  
+  <label style="margin-top: 10px; font-family: sans-serif;">
+    Толщина:
+    <select id="lineWidthSelect" style="margin-left: 5px; padding: 5px;">
+      <option value="2">Тонкая</option>
+      <option value="5">Средняя</option>
+      <option value="10">Толстая</option>
+    </select>
+  </label>
+
   <button id="clearBtn">Очистить</button>
 </div>
 
