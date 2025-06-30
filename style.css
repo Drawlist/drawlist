@@ -181,4 +181,7 @@ footer {
   user-select: none;
 }
 
+body {
+  padding-bottom: 40px; /* место под футер */
+}
   
