@@ -52,3 +52,18 @@ button:hover {
 .center-block p {
   margin-bottom: 20px;     /* отступ между текстом и кнопкой */
 }
+
+button {
+  padding: 10px 20px;
+  font-size: 18px;
+  background-color: #4CAF50; /* зелёный */
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease; /* плавный переход */
+}
+
+button:hover {
+  background-color: #45a049; /* чуть темнее при наведении */
+}
