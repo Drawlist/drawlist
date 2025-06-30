@@ -98,7 +98,10 @@ button {
 <div id="drawArea" style="display: none; flex-direction: column; align-items: center;">
   <canvas id="canvas"></canvas>
   
-  <label style="margin-top: 10px; font-family: sans-serif;">
+  <label style="margin-top: 10px; font-family: sans-serif;"> 
+  Цвет:
+  <input type="color" id="colorPicker" value="#000000" style="margin-left: 5px; padding: 3px; width: 40px; height: 30px; border: none;">
+</label>
     Толщина:
     <select id="lineWidthSelect" style="margin-left: 5px; padding: 5px;">
       <option value="2">Тонкая</option>
@@ -176,15 +179,18 @@ button {
 
   function drawAt(x, y) {
   const lineWidth = parseInt(document.getElementById('lineWidthSelect').value, 10);
+  const color = document.getElementById('colorPicker').value;
+
   ctx.lineWidth = lineWidth;
   ctx.lineCap = 'round';
-  ctx.strokeStyle = '#000';
+  ctx.strokeStyle = color;
 
   ctx.lineTo(x, y);
   ctx.stroke();
   ctx.beginPath();
   ctx.moveTo(x, y);
 }
+
 
   clearBtn.addEventListener('click', () => {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
