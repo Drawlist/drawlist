@@ -96,9 +96,9 @@
   let drawing = false;
 
   function resizeCanvas() {
-    canvas.width = canvas.clientWidth;
-    canvas.height = canvas.clientHeight;
-  }
+  canvas.width = canvas.clientWidth;
+  canvas.height = canvas.clientWidth * 3 / 4; // высота = ширина * 3/4
+}
   window.addEventListener('resize', resizeCanvas);
   window.addEventListener('load', resizeCanvas);
 
