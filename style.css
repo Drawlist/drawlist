@@ -169,7 +169,7 @@ canvas.addEventListener('touchend', (e) => {
 
 footer {
   position: fixed;
-  bottom: 0;
+  bottom: -10px; /* сдвигает футер на 10 пикселей ниже видимой границы */
   width: 100%;
   text-align: center;
   padding: 10px 0;
@@ -180,4 +180,5 @@ footer {
   border-top: 1px solid #ccc;
   user-select: none;
 }
+
   
