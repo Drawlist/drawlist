@@ -7,29 +7,38 @@
 <style>
   body {
     margin: 0;
-    padding: 0;
-    background: #f0f0f0;
-    font-family: sans-serif;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
     height: 100vh;
+    display: flex;
     justify-content: center;
+    align-items: center;
+    background-color: #f9f9f9;
   }
 
   .center-block {
     text-align: center;
-    animation: fadeIn 2s forwards;
+  }
+
+  .center-block p {
+    font-size: 60px;      /* увеличенный размер */
+    font-weight: 700;     /* жирный шрифт */
+    font-family: sans-serif;
+    opacity: 0;
+    animation: fadeIn 2s ease-in-out forwards;
+    margin-bottom: 20px;
   }
 
   @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
-  .fade-in-btn {
-    opacity: 0;
-    animation: fadeIn 2s forwards;
+  button {
     padding: 10px 20px;
     font-size: 18px;
     background-color: #4CAF50;
@@ -37,30 +46,34 @@
     border: none;
     border-radius: 5px;
     cursor: pointer;
-    margin-top: 20px;
+    opacity: 0;
+    animation: fadeIn 2s forwards;
+    transition: background-color 0.3s ease;
+  }
+
+  button:hover {
+    background-color: #45a049;
   }
 
   canvas {
     display: none;
-    margin-top: 30px;
-    width: 90vw;
+    width: 100%;
     max-width: 800px;
-    aspect-ratio: 4 / 3;
+    height: auto;
     border: 2px solid #333;
     background: white;
-    touch-action: none;
   }
 
-  #clearBtn {
-    display: none;
-    margin-top: 15px;
-    padding: 10px 20px;
-    font-size: 16px;
-    border: none;
-    border-radius: 5px;
-    background-color: #e74c3c;
-    color: white;
-    cursor: pointer;
+  @media (max-width: 600px) {
+    canvas {
+      max-width: 100%;
+      height: auto;
+    }
+
+    button {
+      font-size: 14px;
+      padding: 8px 16px;
+    }
   }
 </style>
 </head>
@@ -68,11 +81,11 @@
 
 <div class="center-block" id="intro">
   <p>drawlist</p>
-  <button class="fade-in-btn" id="drawBtn">рисовать</button>
+  <button id="drawBtn">рисовать</button>
 </div>
 
 <canvas id="canvas"></canvas>
-<button id="clearBtn">Очистить</button>
+<button id="clearBtn" style="display:none; margin-top: 15px; padding: 10px 20px; font-size: 16px; border: none; border-radius: 5px; background-color: #e74c3c; color: white; cursor: pointer;">Очистить</button>
 
 <script>
   const intro = document.getElementById('intro');
@@ -86,18 +99,13 @@
     canvas.width = canvas.clientWidth;
     canvas.height = canvas.clientHeight;
   }
-
   window.addEventListener('resize', resizeCanvas);
   window.addEventListener('load', resizeCanvas);
 
   drawBtn.addEventListener('click', () => {
-    // Скрываем приветствие и кнопку
     intro.style.display = 'none';
-
-    // Показываем холст и кнопку очистки
     canvas.style.display = 'block';
     clearBtn.style.display = 'inline-block';
-
     resizeCanvas();
   });
 
@@ -122,7 +130,6 @@
     drawAt(x, y);
   });
 
-  // Сенсорные события для мобильных
   canvas.addEventListener('touchstart', (e) => {
     e.preventDefault();
     drawing = true;
