@@ -31,7 +31,7 @@
     }
 
     canvas {
-      display: none; /* скрыто по умолчанию */
+      display: none; /* скрыто до нажатия */
       margin-top: 30px;
       width: 100%;
       max-width: 800px;
@@ -51,6 +51,13 @@
       background-color: #e74c3c;
       color: white;
       cursor: pointer;
+    }
+
+    @media (max-width: 600px) {
+      .fade-in-btn, #clearBtn {
+        font-size: 14px;
+        padding: 8px 16px;
+      }
     }
   </style>
 </head>
@@ -110,17 +117,13 @@
     if (!drawing) return;
     const touch = e.touches[0];
     const rect = canvas.getBoundingClientRect();
-    const x = touch.clientX - rect.left;
-    const y = touch.clientY - rect.top;
-    drawAt(x, y);
+    drawAt(touch.clientX - rect.left, touch.clientY - rect.top);
   });
 
   function draw(e) {
     if (!drawing) return;
     const rect = canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    drawAt(x, y);
+    drawAt(e.clientX - rect.left, e.clientY - rect.top);
   }
 
   function drawAt(x, y) {
