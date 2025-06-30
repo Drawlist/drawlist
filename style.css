@@ -62,7 +62,6 @@
     display: none; /* скрыть изначально */
     width: 100%;
     max-width: 800px;
-    height: auto;
     border: 2px solid #333;
     background: white;
   }
@@ -99,8 +98,11 @@
   let drawing = false;
 
   function resizeCanvas() {
-    canvas.width = canvas.clientWidth;
-    canvas.height = canvas.clientHeight;
+    const maxWidth = canvas.parentElement.clientWidth * 0.9;
+    canvas.width = maxWidth;
+    canvas.height = maxWidth * 3 / 4;
+    canvas.style.width = canvas.width + 'px';
+    canvas.style.height = canvas.height + 'px';
   }
   window.addEventListener('resize', resizeCanvas);
   window.addEventListener('load', resizeCanvas);
