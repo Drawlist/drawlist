@@ -1,47 +1,39 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Fade In Button</title>
-<style>
-  body {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100vh;
-    margin: 0;
-  }
-
-  p {
-    margin-bottom: 20px;
-    font-size: 24px;
-  }
-
-  button {
-    opacity: 0; /* изначально прозрачная */
-    animation: fadeIn 2s forwards;
-    padding: 10px 20px;
-    font-size: 18px;
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-  }
-
-  @keyframes fadeIn {
-    to {
-      opacity: 1;
+  <meta charset="UTF-8" />
+  <title>Главная</title>
+  <style>
+    .fade-in-btn {
+      opacity: 0;
+      animation: fadeIn 2s forwards;
+      padding: 10px 20px;
+      font-size: 18px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
     }
-  }
-</style>
+    @keyframes fadeIn {
+      to {
+        opacity: 1;
+      }
+    }
+    .center-block {
+      text-align: center;
+      margin-top: 100px;
+    }
+    .center-block p {
+      margin-bottom: 20px;
+      font-size: 24px;
+    }
+  </style>
 </head>
 <body>
-
-<p>привет</p>
-<button>рисовать</button>
-
+  <div class="center-block">
+    <p>привет</p>
+    <a href="draw.html"><button class="fade-in-btn">рисовать</button></a>
+  </div>
 </body>
 </html>
