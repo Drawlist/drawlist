@@ -13,6 +13,7 @@
       align-items: center;
       background-color: #f9f9f9;
       flex-direction: column;
+      font-family: sans-serif;
     }
 
     .center-block {
@@ -22,7 +23,6 @@
     .center-block p {
       font-size: 60px;
       font-weight: 700;
-      font-family: sans-serif;
       opacity: 0;
       animation: fadeIn 2s ease-in-out forwards;
       margin-bottom: 20px;
@@ -39,48 +39,59 @@
       }
     }
 
-    /* Общий стиль кнопок */
-button {
-  padding: 10px 20px;
-  font-size: 18px;
-  background-color: #4CAF50;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-  margin-top: 20px;
-}
-
-/* Анимация только для кнопки "рисовать" */
-#drawBtn {
-  opacity: 0;
-  animation: fadeIn 2s forwards;
-}
+    button {
+      padding: 10px 20px;
+      font-size: 18px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      margin-top: 20px;
+    }
 
     button:hover {
       background-color: #45a049;
+    }
+
+    #drawBtn {
+      opacity: 0;
+      animation: fadeIn 2s forwards;
     }
 
     #drawArea {
       display: none;
       flex-direction: column;
       align-items: center;
+      width: 90vw;
+      max-width: 800px;
     }
 
     canvas {
-      width: 90vw;
-      max-width: 800px;
+      width: 100%;
       border: 2px solid #333;
       background: white;
       touch-action: none;
+      margin-top: 10px;
+      border-radius: 6px;
+    }
+
+    label {
+      margin-top: 15px;
+      font-weight: 600;
+      user-select: none;
+    }
+
+    #controls {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin-top: 15px;
+      flex-wrap: wrap;
     }
 
     @media (max-width: 600px) {
-      canvas {
-        max-width: 100%;
-      }
-
       button {
         font-size: 14px;
         padding: 8px 16px;
@@ -90,120 +101,142 @@ button {
 </head>
 <body>
 
-<div class="center-block" id="intro">
-  <p>drawlist</p>
-  <button id="drawBtn">рисовать</button>
-</div>
+  <div class="center-block" id="intro">
+    <p>drawlist</p>
+    <button id="drawBtn">рисовать</button>
+  </div>
 
-<div id="drawArea" style="display: none; flex-direction: column; align-items: center;">
-  <canvas id="canvas"></canvas>
-  
-  <label style="margin-top: 10px; font-family: sans-serif;"> 
-  Цвет:
-  <input type="color" id="colorPicker" value="#000000" style="margin-left: 5px; padding: 3px; width: 40px; height: 30px; border: none;">
-</label>
-    Толщина:
-    <select id="lineWidthSelect" style="margin-left: 5px; padding: 5px;">
-      <option value="2">Тонкая</option>
-      <option value="5">Средняя</option>
-      <option value="10">Толстая</option>
-    </select>
-  </label>
-  <button id="clearBtn">Очистить</button>
-  <button id="saveBtn">Скачать</button>
-</div>
+  <div id="drawArea">
+    <canvas id="canvas" height="600"></canvas>
 
-<script>
-  const intro = document.getElementById('intro');
-  const drawBtn = document.getElementById('drawBtn');
-  const drawArea = document.getElementById('drawArea');
-  const canvas = document.getElementById('canvas');
-  const clearBtn = document.getElementById('clearBtn');
-  const ctx = canvas.getContext('2d');
-  let drawing = false;
+    <div id="controls">
+      <label>
+        Цвет:
+        <input type="color" id="colorPicker" value="#000000" style="margin-left: 5px; vertical-align: middle;">
+      </label>
 
-  function resizeCanvas() {
-    canvas.width = canvas.clientWidth;
-    canvas.height = canvas.clientWidth * 3 / 4;
-  }
+      <label>
+        Толщина:
+        <select id="lineWidthSelect" style="margin-left: 5px;">
+          <option value="2">Тонкая</option>
+          <option value="5" selected>Средняя</option>
+          <option value="10">Толстая</option>
+        </select>
+      </label>
 
-  window.addEventListener('resize', resizeCanvas);
-  window.addEventListener('load', resizeCanvas);
+      <button id="clearBtn">Очистить</button>
+      <button id="saveBtn">Скачать</button>
+    </div>
+  </div>
 
-  drawBtn.addEventListener('click', () => {
-    intro.style.display = 'none';
-    drawArea.style.display = 'flex';
-    resizeCanvas();
-  });
+  <script>
+    const intro = document.getElementById('intro');
+    const drawBtn = document.getElementById('drawBtn');
+    const drawArea = document.getElementById('drawArea');
+    const canvas = document.getElementById('canvas');
+    const clearBtn = document.getElementById('clearBtn');
+    const saveBtn = document.getElementById('saveBtn');
+    const ctx = canvas.getContext('2d');
 
-  canvas.addEventListener('mousedown', () => {
-    drawing = true;
-    ctx.beginPath();
-  });
+    let drawing = false;
 
-  canvas.addEventListener('mouseup', () => {
-    drawing = false;
-    ctx.beginPath();
-  });
+    function resizeCanvas() {
+      // Поддерживаем ширину по контейнеру, высоту 3/4 ширины
+      const width = drawArea.clientWidth;
+      canvas.width = width;
+      canvas.height = width * 3 / 4;
+    }
 
-  canvas.addEventListener('mouseout', () => {
-    drawing = false;
-    ctx.beginPath();
-  });
+    window.addEventListener('resize', () => {
+      if (drawArea.style.display === 'flex') {
+        resizeCanvas();
+      }
+    });
 
-  canvas.addEventListener('mousemove', (e) => {
-    if (!drawing) return;
-    const rect = canvas.getBoundingClientRect();
-    drawAt(e.clientX - rect.left, e.clientY - rect.top);
-  });
+    window.addEventListener('load', () => {
+      if (drawArea.style.display === 'flex') {
+        resizeCanvas();
+      }
+    });
 
-  canvas.addEventListener('touchstart', (e) => {
-    e.preventDefault();
-    drawing = true;
-    ctx.beginPath();
-  });
+    drawBtn.addEventListener('click', () => {
+      intro.style.display = 'none';
+      drawArea.style.display = 'flex';
+      resizeCanvas();
+    });
 
-  canvas.addEventListener('touchend', (e) => {
-    e.preventDefault();
-    drawing = false;
-    ctx.beginPath();
-  });
+    canvas.addEventListener('mousedown', (e) => {
+      drawing = true;
+      ctx.beginPath();
+      const rect = canvas.getBoundingClientRect();
+      ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+    });
 
-  canvas.addEventListener('touchmove', (e) => {
-    e.preventDefault();
-    if (!drawing) return;
-    const touch = e.touches[0];
-    const rect = canvas.getBoundingClientRect();
-    drawAt(touch.clientX - rect.left, touch.clientY - rect.top);
-  });
+    canvas.addEventListener('mouseup', () => {
+      drawing = false;
+      ctx.beginPath();
+    });
 
-  function drawAt(x, y) {
-  const lineWidth = parseInt(document.getElementById('lineWidthSelect').value, 10);
-  const color = document.getElementById('colorPicker').value;
+    canvas.addEventListener('mouseout', () => {
+      drawing = false;
+      ctx.beginPath();
+    });
 
-  ctx.lineWidth = lineWidth;
-  ctx.lineCap = 'round';
-  ctx.strokeStyle = color;
+    canvas.addEventListener('mousemove', (e) => {
+      if (!drawing) return;
+      const rect = canvas.getBoundingClientRect();
+      drawAt(e.clientX - rect.left, e.clientY - rect.top);
+    });
 
-  ctx.lineTo(x, y);
-  ctx.stroke();
-  ctx.beginPath();
-  ctx.moveTo(x, y);
-}
-  
-  clearBtn.addEventListener('click', () => {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-  });
+    // Сенсорные события для мобильных
+    canvas.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      drawing = true;
+      ctx.beginPath();
+      const rect = canvas.getBoundingClientRect();
+      const touch = e.touches[0];
+      ctx.moveTo(touch.clientX - rect.left, touch.clientY - rect.top);
+    });
 
-  document.getElementById('saveBtn').addEventListener('click', () => {
-  const link = document.createElement('a');
-  link.download = 'drawlist.png';
-  link.href = canvas.toDataURL();
-  link.click();
-});
-</script>
+    canvas.addEventListener('touchend', (e) => {
+      e.preventDefault();
+      drawing = false;
+      ctx.beginPath();
+    });
+
+    canvas.addEventListener('touchmove', (e) => {
+      e.preventDefault();
+      if (!drawing) return;
+      const rect = canvas.getBoundingClientRect();
+      const touch = e.touches[0];
+      drawAt(touch.clientX - rect.left, touch.clientY - rect.top);
+    });
+
+    function drawAt(x, y) {
+      const lineWidth = parseInt(document.getElementById('lineWidthSelect').value, 10);
+      const color = document.getElementById('colorPicker').value;
+
+      ctx.lineWidth = lineWidth;
+      ctx.lineCap = 'round';
+      ctx.strokeStyle = color;
+
+      ctx.lineTo(x, y);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+    }
+
+    clearBtn.addEventListener('click', () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    });
+
+    saveBtn.addEventListener('click', () => {
+      const link = document.createElement('a');
+      link.download = 'drawlist.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    });
+  </script>
 
 </body>
 </html>
-
-<
