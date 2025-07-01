@@ -30,6 +30,7 @@
       align-items: center;
       flex-direction: column;
       font-family: sans-serif;
+      user-select: none;
     }
 
     #topBanner {
@@ -46,9 +47,19 @@
       font-weight: 600;
       font-size: 24px;
       padding: 0 20px;
-      user-select: none;
       z-index: 1000;
       box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    #themeIcon {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      width: 40px;
+      height: 40px;
+      pointer-events: none;
+      user-select: none;
+      z-index: 1100;
     }
 
     .center-block {
@@ -150,6 +161,8 @@
 
   <div id="topBanner">Начни рисовать</div>
 
+  <svg id="themeIcon" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"></svg>
+
   <div class="center-block" id="intro">
     <p>drawlist</p>
     <button id="drawBtn">рисовать</button>
@@ -200,234 +213,265 @@
     <button id="resetViewBtn" style="background:#2196F3; margin-top:10px;">Сбросить масштаб</button>
   </div>
 
-  <script>
-    const intro = document.getElementById('intro');
-    const drawBtn = document.getElementById('drawBtn');
-    const authorsBtn = document.getElementById('authorsBtn');
-    const drawArea = document.getElementById('drawArea');
-    const canvas = document.getElementById('canvas');
-    const clearBtn = document.getElementById('clearBtn');
-    const eraserBtn = document.getElementById('eraserBtn');
-    const saveBtn = document.getElementById('saveBtn');
-    const resetViewBtn = document.getElementById('resetViewBtn');
-    const colorPicker = document.getElementById('colorPicker');
-    const lineWidthSelect = document.getElementById('lineWidthSelect');
-
-    const textInput = document.getElementById('textInput');
-    const fontSelect = document.getElementById('fontSelect');
-    const fontSizeInput = document.getElementById('fontSizeInput');
-
-    const topBanner = document.getElementById('topBanner');
-
-    const ctx = canvas.getContext('2d');
-    let drawing = false;
-    let isErasing = false;
-
-    // Для зума и панорамирования
-    let scale = 1;
-    let originX = 0;
-    let originY = 0;
-    let lastTouchDistance = null;
-    let isPanning = false;
-    let panStart = { x: 0, y: 0 };
-
-    // Режим добавления текста
-    let isTextMode = false;
-
-    // Кнопка переключения режима текст/рисование
-    const textModeBtn = document.createElement('button');
-    textModeBtn.textContent = 'Добавить текст';
-    textModeBtn.style.marginTop = '10px';
-    drawArea.insertBefore(textModeBtn, resetViewBtn);
-
-    textModeBtn.addEventListener('click', () => {
-      isTextMode = !isTextMode;
-      if (isTextMode) {
-        textModeBtn.textContent = 'Режим рисования';
-        canvas.style.cursor = 'text';
-      } else {
-        textModeBtn.textContent = 'Добавить текст';
-        canvas.style.cursor = 'crosshair';
-      }
-    });
-
-    drawBtn.addEventListener('click', () => {
-      intro.style.display = 'none';
-      drawArea.style.display = 'flex';
-      topBanner.style.display = 'none'; // Скрываем верхний баннер
-      resizeCanvas();
-    });
-
-    authorsBtn.addEventListener('click', () => {
-      alert('Авторы проекта:\n\n- Адиль ЧУйтенов 1\n- Кубат Чуйтенов 2\n- ...\n\nСпасибо за использование Drawlist!');
-    });
-
-    eraserBtn.addEventListener('click', () => {
-      isErasing = !isErasing;
-      eraserBtn.textContent = isErasing ? 'Рисовать' : 'Ластик';
-    });
-
-    canvas.addEventListener('mousedown', (e) => {
-      if (isTextMode) return; // если текст, не рисуем мышью
-      drawing = true;
-      ctx.beginPath();
-      const rect = canvas.getBoundingClientRect();
-      const x = (e.clientX - rect.left - originX) / scale;
-      const y = (e.clientY - rect.top - originY) / scale;
-      ctx.moveTo(x, y);
-    });
-
-    canvas.addEventListener('mouseup', () => {
-      drawing = false;
-    });
-
-    canvas.addEventListener('mouseout', () => {
-      drawing = false;
-    });
-
-    canvas.addEventListener('mousemove', (e) => {
-      if (!drawing || isTextMode) return;
-      const rect = canvas.getBoundingClientRect();
-      const x = (e.clientX - rect.left - originX) / scale;
-      const y = (e.clientY - rect.top - originY) / scale;
-      drawAt(x, y);
-    });
-
-    canvas.addEventListener('click', (e) => {
-      if (!isTextMode) return;
-
-      const rect = canvas.getBoundingClientRect();
-      const x = (e.clientX - rect.left - originX) / scale;
-      const y = (e.clientY - rect.top - originY) / scale;
-
-      const fontSize = parseInt(fontSizeInput.value, 10) || 24;
-      const fontFamily = fontSelect.value || 'Arial';
-      const text = textInput.value.trim();
-
-      if (text === '') return;
-
-      ctx.save();
-      ctx.scale(1 / scale, 1 / scale); // компенсируем масштаб, чтобы текст был нормального размера
-      ctx.font = `${fontSize}px ${fontFamily}`;
-      ctx.fillStyle = colorPicker.value;
-      ctx.fillText(text, (x + originX) * scale, (y + originY) * scale);
-      ctx.restore();
-
-      // Сброс режима текста, чтобы не писать много раз подряд
-      isTextMode = false;
-      textModeBtn.textContent = 'Добавить текст';
-      canvas.style.cursor = 'crosshair';
-    });
-
-    canvas.addEventListener('touchstart', (e) => {
-      if (e.touches.length === 1) {
-        if (isTextMode) return;
-        e.preventDefault();
-        drawing = true;
-        ctx.beginPath();
-        const rect = canvas.getBoundingClientRect();
-        const touch = e.touches[0];
-        const x = (touch.clientX - rect.left - originX) / scale;
-        const y = (touch.clientY - rect.top - originY) / scale;
-        ctx.moveTo(x, y);
-      } else if (e.touches.length === 2) {
-        e.preventDefault();
-        lastTouchDistance = getTouchDistance(e.touches);
-        isPanning = true;
-        panStart.x = (e.touches[0].clientX + e.touches[1].clientX) / 2 - originX;
-        panStart.y = (e.touches[0].clientY + e.touches[1].clientY) / 2 - originY;
-      }
-    });
-
-    canvas.addEventListener('touchend', (e) => {
-      if (e.touches.length < 2) {
-        isPanning = false;
-      }
-      if (e.touches.length === 0) {
-        drawing = false;
-      }
-    });
-
-    canvas.addEventListener('touchmove', (e) => {
-      if (e.touches.length === 1 && drawing) {
-        if (isTextMode) return;
-        e.preventDefault();
-        const rect = canvas.getBoundingClientRect();
-        const touch = e.touches[0];
-        const x = (touch.clientX - rect.left - originX) / scale;
-        const y = (touch.clientY - rect.top - originY) / scale;
-        drawAt(x, y);
-      } else if (e.touches.length === 2 && isPanning) {
-        e.preventDefault();
-        const newDistance = getTouchDistance(e.touches);
-        const zoomFactor = newDistance / lastTouchDistance;
-        lastTouchDistance = newDistance;
-
-        scale *= zoomFactor;
-        scale = Math.max(0.5, Math.min(5, scale));
-
-        const centerX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
-        const centerY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
-
-        originX = centerX - panStart.x;
-        originY = centerY - panStart.y;
-
-        applyTransform();
-      }
-    });
-
-    function drawAt(x, y) {
-      ctx.lineWidth = parseInt(lineWidthSelect.value, 10);
-      ctx.lineCap = 'round';
-      ctx.strokeStyle = isErasing ? '#ffffff' : colorPicker.value;
-
-      ctx.lineTo(x, y);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.moveTo(x, y);
-    }
-
-    clearBtn.addEventListener('click', () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-    });
-
-    saveBtn.addEventListener('click', () => {
-      const link = document.createElement('a');
-      link.download = 'drawlist.png';
-      link.href = canvas.toDataURL();
-      link.click();
-    });
-
-    resetViewBtn.addEventListener('click', () => {
-      scale = 1;
-      originX = 0;
-      originY = 0;
-      applyTransform();
-    });
-
-    function getTouchDistance(touches) {
-      const dx = touches[0].clientX - touches[1].clientX;
-      const dy = touches[0].clientY - touches[1].clientY;
-      return Math.sqrt(dx * dx + dy * dy);
-    }
-
-    function applyTransform() {
-      canvas.style.transform = `translate(${originX}px, ${originY}px) scale(${scale})`;
-      canvas.style.transformOrigin = '0 0';
-    }
-
-    function resizeCanvas() {
-      canvas.width = canvas.clientWidth;
-      canvas.height = canvas.clientWidth * 3 / 4;
-      applyTransform();
-    }
-
-    window.addEventListener('resize', resizeCanvas);
-    window.addEventListener('load', resizeCanvas);
-  </script>
-
   <footer style="margin-top: 20px; font-size: 14px;">
     © 2025 Все права защищены
   </footer>
+
+<script>
+  const intro = document.getElementById('intro');
+  const drawBtn = document.getElementById('drawBtn');
+  const authorsBtn = document.getElementById('authorsBtn');
+  const drawArea = document.getElementById('drawArea');
+  const canvas = document.getElementById('canvas');
+  const clearBtn = document.getElementById('clearBtn');
+  const eraserBtn = document.getElementById('eraserBtn');
+  const saveBtn = document.getElementById('saveBtn');
+  const resetViewBtn = document.getElementById('resetViewBtn');
+  const colorPicker = document.getElementById('colorPicker');
+  const lineWidthSelect = document.getElementById('lineWidthSelect');
+
+  const textInput = document.getElementById('textInput');
+  const fontSelect = document.getElementById('fontSelect');
+  const fontSizeInput = document.getElementById('fontSizeInput');
+
+  const topBanner = document.getElementById('topBanner');
+  const themeIcon = document.getElementById('themeIcon');
+
+  const ctx = canvas.getContext('2d');
+  let drawing = false;
+  let isErasing = false;
+
+  // Для зума и панорамирования
+  let scale = 1;
+  let originX = 0;
+  let originY = 0;
+  let lastTouchDistance = null;
+  let isPanning = false;
+  let panStart = { x: 0, y: 0 };
+
+  // Режим добавления текста
+  let isTextMode = false;
+
+  // Кнопка переключения режима текст/рисование
+  const textModeBtn = document.createElement('button');
+  textModeBtn.textContent = 'Добавить текст';
+  textModeBtn.style.marginTop = '10px';
+  drawArea.insertBefore(textModeBtn, resetViewBtn);
+
+  textModeBtn.addEventListener('click', () => {
+    isTextMode = !isTextMode;
+    if (isTextMode) {
+      textModeBtn.textContent = 'Режим рисования';
+      canvas.style.cursor = 'text';
+    } else {
+      textModeBtn.textContent = 'Добавить текст';
+      canvas.style.cursor = 'crosshair';
+    }
+  });
+
+  drawBtn.addEventListener('click', () => {
+    intro.style.display = 'none';
+    drawArea.style.display = 'flex';
+    topBanner.style.display = 'none'; // Скрываем верхний баннер
+    resizeCanvas();
+  });
+
+  authorsBtn.addEventListener('click', () => {
+    alert('Авторы проекта:\n\n- Имя Фамилия 1\n- Имя Фамилия 2\n- ...\n\nСпасибо за использование Drawlist!');
+  });
+
+  eraserBtn.addEventListener('click', () => {
+    isErasing = !isErasing;
+    eraserBtn.textContent = isErasing ? 'Рисовать' : 'Ластик';
+  });
+
+  canvas.addEventListener('mousedown', (e) => {
+    if (isTextMode) return; // если текст, не рисуем мышью
+    drawing = true;
+    ctx.beginPath();
+    const rect = canvas.getBoundingClientRect();
+    const x = (e.clientX - rect.left - originX) / scale;
+    const y = (e.clientY - rect.top - originY) / scale;
+    ctx.moveTo(x, y);
+  });
+
+  canvas.addEventListener('mouseup', () => {
+    drawing = false;
+  });
+
+  canvas.addEventListener('mouseout', () => {
+    drawing = false;
+  });
+
+  canvas.addEventListener('mousemove', (e) => {
+    if (!drawing || isTextMode) return;
+    const rect = canvas.getBoundingClientRect();
+    const x = (e.clientX - rect.left - originX) / scale;
+    const y = (e.clientY - rect.top - originY) / scale;
+    drawAt(x, y);
+  });
+
+  canvas.addEventListener('click', (e) => {
+    if (!isTextMode) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const x = (e.clientX - rect.left - originX) / scale;
+    const y = (e.clientY - rect.top - originY) / scale;
+
+    const fontSize = parseInt(fontSizeInput.value, 10) || 24;
+    const fontFamily = fontSelect.value || 'Arial';
+    const text = textInput.value.trim();
+
+    if (text === '') return;
+
+    ctx.save();
+    ctx.scale(1 / scale, 1 / scale); // компенсируем масштаб, чтобы текст был нормального размера
+    ctx.font = `${fontSize}px ${fontFamily}`;
+    ctx.fillStyle = colorPicker.value;
+    ctx.fillText(text, (x + originX) * scale, (y + originY) * scale);
+    ctx.restore();
+
+    // Сброс режима текста, чтобы не писать много раз подряд
+    isTextMode = false;
+    textModeBtn.textContent = 'Добавить текст';
+    canvas.style.cursor = 'crosshair';
+  });
+
+  canvas.addEventListener('touchstart', (e) => {
+    if (e.touches.length === 1) {
+      if (isTextMode) return;
+      e.preventDefault();
+      drawing = true;
+      ctx.beginPath();
+      const rect = canvas.getBoundingClientRect();
+      const touch = e.touches[0];
+      const x = (touch.clientX - rect.left - originX) / scale;
+      const y = (touch.clientY - rect.top - originY) / scale;
+      ctx.moveTo(x, y);
+    } else if (e.touches.length === 2) {
+      e.preventDefault();
+      lastTouchDistance = getTouchDistance(e.touches);
+      isPanning = true;
+      panStart.x = (e.touches[0].clientX + e.touches[1].clientX) / 2 - originX;
+      panStart.y = (e.touches[0].clientY + e.touches[1].clientY) / 2 - originY;
+    }
+  });
+
+  canvas.addEventListener('touchend', (e) => {
+    if (e.touches.length < 2) {
+      isPanning = false;
+    }
+    if (e.touches.length === 0) {
+      drawing = false;
+    }
+  });
+
+  canvas.addEventListener('touchmove', (e) => {
+    if (e.touches.length === 1 && drawing) {
+      if (isTextMode) return;
+      e.preventDefault();
+      const rect = canvas.getBoundingClientRect();
+      const touch = e.touches[0];
+      const x = (touch.clientX - rect.left - originX) / scale;
+      const y = (touch.clientY - rect.top - originY) / scale;
+      drawAt(x, y);
+    } else if (e.touches.length === 2 && isPanning) {
+      e.preventDefault();
+      const newDistance = getTouchDistance(e.touches);
+      const zoomFactor = newDistance / lastTouchDistance;
+      lastTouchDistance = newDistance;
+
+      scale *= zoomFactor;
+      scale = Math.max(0.5, Math.min(5, scale));
+
+      const centerX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+      const centerY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+
+      originX = centerX - panStart.x;
+      originY = centerY - panStart.y;
+
+      applyTransform();
+    }
+  });
+
+  function drawAt(x, y) {
+    ctx.lineWidth = parseInt(lineWidthSelect.value, 10);
+    ctx.lineCap = 'round';
+    ctx.strokeStyle = isErasing ? '#ffffff' : colorPicker.value;
+
+    ctx.lineTo(x, y);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+  }
+
+  clearBtn.addEventListener('click', () => {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  });
+
+  saveBtn.addEventListener('click', () => {
+    const link = document.createElement('a');
+    link.download = 'drawlist.png';
+    link.href = canvas.toDataURL();
+    link.click();
+  });
+
+  resetViewBtn.addEventListener('click', () => {
+    scale = 1;
+    originX = 0;
+    originY = 0;
+    applyTransform();
+  });
+
+  function getTouchDistance(touches) {
+    const dx = touches[0].clientX - touches[1].clientX;
+    const dy = touches[0].clientY - touches[1].clientY;
+    return Math.sqrt(dx * dx + dy * dy);
+  }
+
+  function applyTransform() {
+    canvas.style.transform = `translate(${originX}px, ${originY}px) scale(${scale})`;
+    canvas.style.transformOrigin = '0 0';
+  }
+
+  function resizeCanvas() {
+    canvas.width = canvas.clientWidth;
+    canvas.height = canvas.clientWidth * 3 / 4;
+    applyTransform();
+  }
+
+  window.addEventListener('resize', resizeCanvas);
+  window.addEventListener('load', resizeCanvas);
+
+  // --------- Тема и иконка ---------
+
+  function updateThemeIcon() {
+    const isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    if (isDark) {
+      themeIcon.innerHTML = `
+        <circle cx="32" cy="32" r="15" fill="#f0e68c"/>
+        <circle cx="40" cy="28" r="15" fill="${getComputedStyle(document.body).backgroundColor}"/>
+      `;
+    } else {
+      themeIcon.innerHTML = `
+        <circle cx="32" cy="32" r="12" fill="#FFD93B"/>
+        <g stroke="#FFD93B" stroke-width="3">
+          <line x1="32" y1="4" x2="32" y2="16"/>
+          <line x1="32" y1="48" x2="32" y2="60"/>
+          <line x1="4" y1="32" x2="16" y2="32"/>
+          <line x1="48" y1="32" x2="60" y2="32"/>
+          <line x1="12" y1="12" x2="20" y2="20"/>
+          <line x1="44" y1="44" x2="52" y2="52"/>
+          <line x1="12" y1="52" x2="20" y2="44"/>
+          <line x1="44" y1="20" x2="52" y2="12"/>
+        </g>
+      `;
+    }
+  }
+
+  updateThemeIcon();
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateThemeIcon);
+</script>
+
 </body>
 </html>
