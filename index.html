@@ -163,4 +163,149 @@
     let panStart = { x: 0, y: 0 };
 
     function resizeCanvas() {
-      canvas.width
+      canvas.width = canvas.clientWidth;
+      canvas.height = canvas.clientWidth * 3 / 4;
+      applyTransform(); // Обновляем трансформ при ресайзе
+    }
+
+    window.addEventListener('resize', resizeCanvas);
+    window.addEventListener('load', resizeCanvas);
+
+    drawBtn.addEventListener('click', () => {
+      intro.style.display = 'none';
+      drawArea.style.display = 'flex';
+      resizeCanvas();
+    });
+
+    eraserBtn.addEventListener('click', () => {
+      isErasing = !isErasing;
+      eraserBtn.textContent = isErasing ? 'Рисовать' : 'Ластик';
+    });
+
+    canvas.addEventListener('mousedown', (e) => {
+      drawing = true;
+      ctx.beginPath();
+      const rect = canvas.getBoundingClientRect();
+      const x = (e.clientX - rect.left - originX) / scale;
+      const y = (e.clientY - rect.top - originY) / scale;
+      ctx.moveTo(x, y);
+    });
+
+    canvas.addEventListener('mouseup', () => {
+      drawing = false;
+    });
+
+    canvas.addEventListener('mouseout', () => {
+      drawing = false;
+    });
+
+    canvas.addEventListener('mousemove', (e) => {
+      if (!drawing) return;
+      const rect = canvas.getBoundingClientRect();
+      const x = (e.clientX - rect.left - originX) / scale;
+      const y = (e.clientY - rect.top - originY) / scale;
+      drawAt(x, y);
+    });
+
+    // Тач события для рисования
+    canvas.addEventListener('touchstart', (e) => {
+      if (e.touches.length === 1) {
+        e.preventDefault();
+        drawing = true;
+        ctx.beginPath();
+        const rect = canvas.getBoundingClientRect();
+        const touch = e.touches[0];
+        const x = (touch.clientX - rect.left - originX) / scale;
+        const y = (touch.clientY - rect.top - originY) / scale;
+        ctx.moveTo(x, y);
+      } else if (e.touches.length === 2) {
+        e.preventDefault();
+        lastTouchDistance = getTouchDistance(e.touches);
+        isPanning = true;
+        panStart.x = (e.touches[0].clientX + e.touches[1].clientX) / 2 - originX;
+        panStart.y = (e.touches[0].clientY + e.touches[1].clientY) / 2 - originY;
+      }
+    });
+
+    canvas.addEventListener('touchend', (e) => {
+      if (e.touches.length < 2) {
+        isPanning = false;
+      }
+      if (e.touches.length === 0) {
+        drawing = false;
+      }
+    });
+
+    canvas.addEventListener('touchmove', (e) => {
+      if (e.touches.length === 1 && drawing) {
+        e.preventDefault();
+        const rect = canvas.getBoundingClientRect();
+        const touch = e.touches[0];
+        const x = (touch.clientX - rect.left - originX) / scale;
+        const y = (touch.clientY - rect.top - originY) / scale;
+        drawAt(x, y);
+      } else if (e.touches.length === 2 && isPanning) {
+        e.preventDefault();
+        const newDistance = getTouchDistance(e.touches);
+        const zoomFactor = newDistance / lastTouchDistance;
+        lastTouchDistance = newDistance;
+
+        scale *= zoomFactor;
+        scale = Math.max(0.5, Math.min(5, scale));
+
+        const centerX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+        const centerY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+
+        originX = centerX - panStart.x;
+        originY = centerY - panStart.y;
+
+        applyTransform();
+      }
+    });
+
+    function drawAt(x, y) {
+      ctx.lineWidth = parseInt(lineWidthSelect.value, 10);
+      ctx.lineCap = 'round';
+      ctx.strokeStyle = isErasing ? '#ffffff' : colorPicker.value;
+
+      ctx.lineTo(x, y);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+    }
+
+    clearBtn.addEventListener('click', () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    });
+
+    saveBtn.addEventListener('click', () => {
+      const link = document.createElement('a');
+      link.download = 'drawlist.png';
+      link.href = canvas.toDataURL();
+      link.click();
+    });
+
+    resetViewBtn.addEventListener('click', () => {
+      scale = 1;
+      originX = 0;
+      originY = 0;
+      applyTransform();
+    });
+
+    function getTouchDistance(touches) {
+      const dx = touches[0].clientX - touches[1].clientX;
+      const dy = touches[0].clientY - touches[1].clientY;
+      return Math.sqrt(dx * dx + dy * dy);
+    }
+
+    function applyTransform() {
+      canvas.style.transform = `translate(${originX}px, ${originY}px) scale(${scale})`;
+      canvas.style.transformOrigin = '0 0';
+    }
+  </script>
+
+  <footer style="margin-top: 20px; font-size: 14px;">
+    © 2025 Все права защищены
+  </footer>
+</body>
+</html>
