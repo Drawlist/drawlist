@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Drawlist с ластиком, масштабированием и текстом</title>
+  <title>Drawlist с кубом меню</title>
 
   <style>
     :root {
@@ -21,16 +21,15 @@
     body {
       background-color: var(--bg-color);
       color: var(--text-color);
-      transition: background-color 0.3s, color 0.3s;
       margin: 0;
-      padding-top: 60px; /* Отступ для верхней панели */
+      padding-top: 60px;
       height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
-      flex-direction: column;
       font-family: sans-serif;
       user-select: none;
+      perspective: 800px; /* для 3D */
     }
 
     #topBanner {
@@ -62,56 +61,86 @@
       z-index: 1100;
     }
 
-    .center-block {
-      text-align: center;
+    /* КУБ */
+    #cubeContainer {
+      width: 320px;
+      height: 200px;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: opacity 0.8s ease, transform 0.8s ease;
+      margin-bottom: 30px;
     }
 
-    .center-block p {
-      font-size: 60px;
-      font-weight: 700;
+    #cubeContainer.hide {
       opacity: 0;
-      animation: fadeIn 2s ease-in-out forwards;
-      margin-bottom: 20px;
+      transform: translateY(-50px) rotateX(45deg);
+      pointer-events: none;
     }
 
-    button {
-      padding: 10px 20px;
-      font-size: 18px;
-      background-color: #4CAF50;
+    .cube-face {
+      position: absolute;
+      width: 320px;
+      height: 200px;
+      background: #4CAF50;
+      border-radius: 10px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
       color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-      margin-top: 20px;
+      font-weight: 700;
+      font-size: 30px;
       user-select: none;
-      opacity: 0;
-      animation: fadeIn 1s ease forwards;
+      backface-visibility: hidden;
+      padding: 20px;
+      box-sizing: border-box;
     }
 
-    button:hover {
-      background-color: #45a049;
+    /* лицевая грань куба — наша меню */
+    #face-front {
+      transform: translateZ(100px);
+      background: #4CAF50;
     }
 
-    #authorsBtn {
+    /* Кнопки внутри меню куба */
+    #face-front button {
+      margin: 12px 8px 0;
+      font-size: 18px;
+      padding: 10px 25px;
       background-color: #2196F3;
-      margin-left: 10px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      color: white;
+      transition: background-color 0.3s ease;
+      user-select: none;
     }
 
-    #authorsBtn:hover {
+    #face-front button:hover {
       background-color: #1976D2;
     }
 
+    #face-front p {
+      margin: 0 0 15px;
+      font-size: 36px;
+      font-weight: 900;
+      text-shadow: 1px 1px 3px rgba(0,0,0,0.3);
+    }
+
+    /* Контейнер рисования (изначально скрыт) */
     #drawArea {
       display: none;
       flex-direction: column;
       align-items: center;
       touch-action: none;
+      width: 90vw;
+      max-width: 800px;
     }
 
     canvas {
-      width: 90vw;
-      max-width: 800px;
+      width: 100%;
+      height: auto;
       border: 2px solid #333;
       background: white;
       touch-action: none;
@@ -119,6 +148,7 @@
       -webkit-user-select: none;
       -webkit-touch-callout: none;
       transform-origin: 0 0;
+      border-radius: 8px;
     }
 
     label {
@@ -136,24 +166,27 @@
       vertical-align: middle;
     }
 
-    @keyframes fadeIn {
-      from {
-        opacity: 0;
-        transform: translateY(30px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+    footer {
+      margin-top: 20px;
+      font-size: 14px;
+      text-align: center;
+      user-select: none;
     }
 
     @media (max-width: 600px) {
-      canvas {
-        max-width: 100%;
+      #cubeContainer {
+        width: 90vw;
+        height: 150px;
       }
 
-      button {
-        font-size: 14px;
+      .cube-face {
+        width: 90vw;
+        height: 150px;
+        font-size: 24px;
+      }
+
+      #face-front button {
+        font-size: 16px;
         padding: 8px 16px;
       }
     }
@@ -162,18 +195,21 @@
 <body>
 
   <div id="topBanner">Начни рисовать</div>
-
   <svg id="themeIcon" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"></svg>
 
-  <div class="center-block" id="intro">
-    <p>drawlist</p>
-    <button id="drawBtn">рисовать</button>
-    <button id="authorsBtn">авторы</button>
+  <!-- Куб меню -->
+  <div id="cubeContainer">
+    <div class="cube-face" id="face-front">
+      <p>drawlist</p>
+      <button id="drawBtn">рисовать</button>
+      <button id="authorsBtn">авторы</button>
+    </div>
   </div>
 
-  <div id="drawArea" style="display: none; flex-direction: column; align-items: center;">
+  <!-- Зона рисования -->
+  <div id="drawArea">
     <canvas id="canvas"></canvas>
-    
+
     <label>
       Цвет:
       <input type="color" id="colorPicker" value="#000000" style="margin-left: 5px; width: 40px; height: 30px; border: none;">
@@ -215,12 +251,12 @@
     <button id="resetViewBtn" style="background:#2196F3; margin-top:10px;">Сбросить масштаб</button>
   </div>
 
-  <footer style="margin-top: 20px; font-size: 14px;">
+  <footer>
     © 2025 Все права защищены
   </footer>
 
 <script>
-  const intro = document.getElementById('intro');
+  const cube = document.getElementById('cubeContainer');
   const drawBtn = document.getElementById('drawBtn');
   const authorsBtn = document.getElementById('authorsBtn');
   const drawArea = document.getElementById('drawArea');
@@ -243,7 +279,7 @@
   let drawing = false;
   let isErasing = false;
 
-  // Для зума и панорамирования
+  // Зум и панорамирование
   let scale = 1;
   let originX = 0;
   let originY = 0;
@@ -251,10 +287,10 @@
   let isPanning = false;
   let panStart = { x: 0, y: 0 };
 
-  // Режим добавления текста
+  // Режим текста
   let isTextMode = false;
 
-  // Кнопка переключения режима текст/рисование
+  // Кнопка переключения режимов текст/рисование
   const textModeBtn = document.createElement('button');
   textModeBtn.textContent = 'Добавить текст';
   textModeBtn.style.marginTop = '10px';
@@ -272,10 +308,16 @@
   });
 
   drawBtn.addEventListener('click', () => {
-    intro.style.display = 'none';
-    drawArea.style.display = 'flex';
-    topBanner.style.display = 'none'; // Скрываем верхний баннер
-    resizeCanvas();
+    // Анимация скрытия куба
+    cube.classList.add('hide');
+
+    // Через 800мс скрываем куб и показываем зону рисования
+    setTimeout(() => {
+      cube.style.display = 'none';
+      drawArea.style.display = 'flex';
+      topBanner.style.display = 'none'; // скрыть баннер
+      resizeCanvas();
+    }, 800);
   });
 
   authorsBtn.addEventListener('click', () => {
@@ -288,7 +330,7 @@
   });
 
   canvas.addEventListener('mousedown', (e) => {
-    if (isTextMode) return; // если текст, не рисуем мышью
+    if (isTextMode) return;
     drawing = true;
     ctx.beginPath();
     const rect = canvas.getBoundingClientRect();
@@ -327,13 +369,12 @@
     if (text === '') return;
 
     ctx.save();
-    ctx.scale(1 / scale, 1 / scale); // компенсируем масштаб, чтобы текст был нормального размера
+    ctx.scale(1 / scale, 1 / scale);
     ctx.font = `${fontSize}px ${fontFamily}`;
     ctx.fillStyle = colorPicker.value;
     ctx.fillText(text, (x + originX) * scale, (y + originY) * scale);
     ctx.restore();
 
-    // Сброс режима текста, чтобы не писать много раз подряд
     isTextMode = false;
     textModeBtn.textContent = 'Добавить текст';
     canvas.style.cursor = 'crosshair';
@@ -443,19 +484,7 @@
   }
 
   window.addEventListener('resize', resizeCanvas);
-  window.addEventListener('load', () => {
-    resizeCanvas();
-
-    // Перезапускаем анимацию кнопок при загрузке
-    document.querySelectorAll('#intro button').forEach(btn => {
-      btn.style.opacity = '0';
-      btn.style.animation = 'none';
-      setTimeout(() => {
-        btn.style.animation = '';
-        btn.classList.add('fade-in'); // для надежности
-      }, 10);
-    });
-  });
+  window.addEventListener('load', resizeCanvas);
 
   // --------- Тема и иконка ---------
 
