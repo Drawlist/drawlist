@@ -5,6 +5,107 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Drawlist с ластиком</title>
 <style>
+<style>
+  /* --- Добавлено: Поддержка тёмной/светлой темы --- */
+  :root {
+    --bg-color: white;
+    --text-color: black;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg-color: #121212;
+      --text-color: #f1f1f1;
+    }
+  }
+
+  body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    transition: background-color 0.3s, color 0.3s;
+  }
+
+  /* --- Существующие стили --- */
+  body {
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--bg-color); /* изменено */
+    flex-direction: column;
+    font-family: sans-serif;
+    color: var(--text-color); /* добавлено */
+  }
+
+  .center-block {
+    text-align: center;
+  }
+
+  .center-block p {
+    font-size: 60px;
+    font-weight: 700;
+    opacity: 0;
+    animation: fadeIn 2s ease-in-out forwards;
+    margin-bottom: 20px;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  button {
+    padding: 10px 20px;
+    font-size: 18px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-top: 20px;
+  }
+
+  button:hover {
+    background-color: #45a049;
+  }
+
+  #drawArea {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  canvas {
+    width: 90vw;
+    max-width: 800px;
+    border: 2px solid #333;
+    background: white;
+    touch-action: none;
+  }
+
+  label {
+    margin-top: 10px;
+  }
+
+  @media (max-width: 600px) {
+    canvas {
+      max-width: 100%;
+    }
+
+    button {
+      font-size: 14px;
+      padding: 8px 16px;
+    }
+  }
+</style> 
   body {
     margin: 0;
     height: 100vh;
