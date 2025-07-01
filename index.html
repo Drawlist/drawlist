@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Drawlist с ластиком и масштабированием</title>
+  <title>Drawlist с ластиком, масштабированием и звуком</title>
 
   <!-- Поддержка тёмной/светлой темы -->
   <style>
@@ -76,7 +76,7 @@
       display: none;
       flex-direction: column;
       align-items: center;
-      touch-action: none; /* Важно для корректной работы жестов */
+      touch-action: none;
     }
 
     canvas {
@@ -84,7 +84,7 @@
       max-width: 800px;
       border: 2px solid #333;
       background: white;
-      touch-action: none; /* Отключаем системные жесты браузера на холсте */
+      touch-action: none;
       user-select: none;
       -webkit-user-select: none;
       -webkit-touch-callout: none;
@@ -138,6 +138,9 @@
     <button id="resetViewBtn" style="background:#2196F3; margin-top:10px;">Сбросить масштаб</button>
   </div>
 
+  <!-- Звук рисования -->
+  <audio id="drawSound" src="https://cdn.jsdelivr.net/gh/aliheg/brush-sound/brush-stroke.mp3" preload="auto"></audio>
+
   <script>
     const intro = document.getElementById('intro');
     const drawBtn = document.getElementById('drawBtn');
@@ -149,10 +152,15 @@
     const resetViewBtn = document.getElementById('resetViewBtn');
     const colorPicker = document.getElementById('colorPicker');
     const lineWidthSelect = document.getElementById('lineWidthSelect');
+    const drawSound = document.getElementById('drawSound');
 
     const ctx = canvas.getContext('2d');
     let drawing = false;
     let isErasing = false;
+
+    // Для звука
+    let lastSoundTime = 0;
+    const soundInterval = 100; // мс между звуками
 
     // Для зума и панорамирования
     let scale = 1;
@@ -264,6 +272,14 @@
     });
 
     function drawAt(x, y) {
+      // Звук рисования с ограничением по частоте
+      const now = Date.now();
+      if (now - lastSoundTime > soundInterval) {
+        drawSound.currentTime = 0;
+        drawSound.play();
+        lastSoundTime = now;
+      }
+
       ctx.lineWidth = parseInt(lineWidthSelect.value, 10);
       ctx.lineCap = 'round';
       ctx.strokeStyle = isErasing ? '#ffffff' : colorPicker.value;
