@@ -157,34 +157,6 @@
         padding: 8px 16px;
       }
     }
-
-    /* Стили для кнопки почты */
-    .email-button {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 12px 20px;
-      background-color: #0078D4;
-      color: white;
-      text-decoration: none;
-      border-radius: 6px;
-      font-size: 16px;
-      font-weight: 500;
-      transition: background-color 0.3s ease, transform 0.2s ease;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-      margin-top: 20px;
-      cursor: pointer;
-      user-select: none;
-    }
-
-    .email-button:hover {
-      background-color: #005fa3;
-      transform: translateY(-1px);
-    }
-
-    .email-button svg {
-      flex-shrink: 0;
-    }
   </style>
 </head>
 <body>
@@ -197,14 +169,6 @@
     <p>drawlist</p>
     <button id="drawBtn">рисовать</button>
     <button id="authorsBtn">авторы</button>
-
-    <!-- Кнопка написать на почту -->
-    <a href="grandmastertop777@gmail.com" class="email-button">
-      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="white" viewBox="0 0 24 24">
-        <path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 2v.01L12 13 4 6.01V6h16zM4 18V8l8 5 8-5v10H4z"/>
-      </svg>
-      <span>Написать мне</span>
-    </a>
   </div>
 
   <div id="drawArea" style="display: none; flex-direction: column; align-items: center;">
@@ -272,151 +236,253 @@
   const fontSelect = document.getElementById('fontSelect');
   const fontSizeInput = document.getElementById('fontSizeInput');
 
-  const ctx = canvas.getContext('2d');
+  const topBanner = document.getElementById('topBanner');
+  const themeIcon = document.getElementById('themeIcon');
 
+  const ctx = canvas.getContext('2d');
   let drawing = false;
-  let erasing = false;
+  let isErasing = false;
+
+  // Для зума и панорамирования
   let scale = 1;
   let originX = 0;
   let originY = 0;
-  let lastX = 0;
-  let lastY = 0;
+  let lastTouchDistance = null;
+  let isPanning = false;
+  let panStart = { x: 0, y: 0 };
 
-  let paths = [];
+  // Режим добавления текста
+  let isTextMode = false;
 
-  function resizeCanvas() {
-    const rect = canvas.getBoundingClientRect();
-    canvas.width = rect.width * window.devicePixelRatio;
-    canvas.height = rect.height * window.devicePixelRatio;
-    ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
-    redraw();
-  }
+  // Кнопка переключения режима текст/рисование
+  const textModeBtn = document.createElement('button');
+  textModeBtn.textContent = 'Добавить текст';
+  textModeBtn.style.marginTop = '10px';
+  drawArea.insertBefore(textModeBtn, resetViewBtn);
 
-  function redraw() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.save();
-    ctx.setTransform(scale, 0, 0, scale, originX, originY);
-
-    paths.forEach(path => {
-      ctx.beginPath();
-      ctx.strokeStyle = path.color;
-      ctx.lineWidth = path.lineWidth;
-      ctx.lineCap = 'round';
-      ctx.lineJoin = 'round';
-      for (let i = 0; i < path.points.length; i++) {
-        const p = path.points[i];
-        if (i === 0) ctx.moveTo(p.x, p.y);
-        else ctx.lineTo(p.x, p.y);
-      }
-      ctx.stroke();
-    });
-
-    ctx.restore();
-  }
-
-  drawBtn.onclick = () => {
-    intro.style.display = 'none';
-    drawArea.style.display = 'flex';
-    resizeCanvas();
-  };
-
-  window.addEventListener('resize', resizeCanvas);
-
-  canvas.addEventListener('mousedown', e => {
-    drawing = true;
-    lastX = (e.offsetX - originX) / scale;
-    lastY = (e.offsetY - originY) / scale;
-    paths.push({
-      color: erasing ? '#FFFFFF' : colorPicker.value,
-      lineWidth: parseInt(lineWidthSelect.value),
-      points: [{ x: lastX, y: lastY }]
-    });
+  textModeBtn.addEventListener('click', () => {
+    isTextMode = !isTextMode;
+    if (isTextMode) {
+      textModeBtn.textContent = 'Режим рисования';
+      canvas.style.cursor = 'text';
+    } else {
+      textModeBtn.textContent = 'Добавить текст';
+      canvas.style.cursor = 'crosshair';
+    }
   });
 
-  canvas.addEventListener('mousemove', e => {
-    if (!drawing) return;
-    const x = (e.offsetX - originX) / scale;
-    const y = (e.offsetY - originY) / scale;
-    const currentPath = paths[paths.length - 1];
-    currentPath.points.push({ x, y });
-    lastX = x;
-    lastY = y;
-    redraw();
+  drawBtn.addEventListener('click', () => {
+    intro.style.display = 'none';
+    drawArea.style.display = 'flex';
+    topBanner.style.display = 'none'; // Скрываем верхний баннер
+    resizeCanvas();
+  });
+
+  authorsBtn.addEventListener('click', () => {
+    alert('Авторы проекта:\n\n- Адиль Чуйтенов 1\n- Кубат Чуйтенов 2\n\nСпасибо за использование Drawlist!');
+  });
+
+  eraserBtn.addEventListener('click', () => {
+    isErasing = !isErasing;
+    eraserBtn.textContent = isErasing ? 'Рисовать' : 'Ластик';
+  });
+
+  canvas.addEventListener('mousedown', (e) => {
+    if (isTextMode) return; // если текст, не рисуем мышью
+    drawing = true;
+    ctx.beginPath();
+    const rect = canvas.getBoundingClientRect();
+    const x = (e.clientX - rect.left - originX) / scale;
+    const y = (e.clientY - rect.top - originY) / scale;
+    ctx.moveTo(x, y);
   });
 
   canvas.addEventListener('mouseup', () => {
     drawing = false;
   });
 
-  canvas.addEventListener('mouseleave', () => {
+  canvas.addEventListener('mouseout', () => {
     drawing = false;
   });
 
-  eraserBtn.onclick = () => {
-    erasing = !erasing;
-    eraserBtn.textContent = erasing ? 'Рисовать' : 'Ластик';
-  };
-
-  clearBtn.onclick = () => {
-    paths = [];
-    redraw();
-  };
-
-  saveBtn.onclick = () => {
-    const dataUrl = canvas.toDataURL('image/png');
-    const link = document.createElement('a');
-    link.href = dataUrl;
-    link.download = 'drawlist.png';
-    link.click();
-  };
-
-  // Масштабирование колесиком мыши
-  canvas.addEventListener('wheel', e => {
-    e.preventDefault();
-    const delta = e.deltaY < 0 ? 1.1 : 0.9;
-    const mouseX = e.offsetX;
-    const mouseY = e.offsetY;
-
-    originX = mouseX - (mouseX - originX) * delta;
-    originY = mouseY - (mouseY - originY) * delta;
-    scale *= delta;
-
-    if (scale < 0.5) scale = 0.5;
-    if (scale > 4) scale = 4;
-
-    redraw();
+  canvas.addEventListener('mousemove', (e) => {
+    if (!drawing || isTextMode) return;
+    const rect = canvas.getBoundingClientRect();
+    const x = (e.clientX - rect.left - originX) / scale;
+    const y = (e.clientY - rect.top - originY) / scale;
+    drawAt(x, y);
   });
 
-  resetViewBtn.onclick = () => {
+  canvas.addEventListener('click', (e) => {
+    if (!isTextMode) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const x = (e.clientX - rect.left - originX) / scale;
+    const y = (e.clientY - rect.top - originY) / scale;
+
+    const fontSize = parseInt(fontSizeInput.value, 10) || 24;
+    const fontFamily = fontSelect.value || 'Arial';
+    const text = textInput.value.trim();
+
+    if (text === '') return;
+
+    ctx.save();
+    ctx.scale(1 / scale, 1 / scale); // компенсируем масштаб, чтобы текст был нормального размера
+    ctx.font = `${fontSize}px ${fontFamily}`;
+    ctx.fillStyle = colorPicker.value;
+    ctx.fillText(text, (x + originX) * scale, (y + originY) * scale);
+    ctx.restore();
+
+    // Сброс режима текста, чтобы не писать много раз подряд
+    isTextMode = false;
+    textModeBtn.textContent = 'Добавить текст';
+    canvas.style.cursor = 'crosshair';
+  });
+
+  canvas.addEventListener('touchstart', (e) => {
+    if (e.touches.length === 1) {
+      if (isTextMode) return;
+      e.preventDefault();
+      drawing = true;
+      ctx.beginPath();
+      const rect = canvas.getBoundingClientRect();
+      const touch = e.touches[0];
+      const x = (touch.clientX - rect.left - originX) / scale;
+      const y = (touch.clientY - rect.top - originY) / scale;
+      ctx.moveTo(x, y);
+    } else if (e.touches.length === 2) {
+      e.preventDefault();
+      lastTouchDistance = getTouchDistance(e.touches);
+      isPanning = true;
+      panStart.x = (e.touches[0].clientX + e.touches[1].clientX) / 2 - originX;
+      panStart.y = (e.touches[0].clientY + e.touches[1].clientY) / 2 - originY;
+    }
+  });
+
+  canvas.addEventListener('touchend', (e) => {
+    if (e.touches.length < 2) {
+      isPanning = false;
+    }
+    if (e.touches.length === 0) {
+      drawing = false;
+    }
+  });
+
+  canvas.addEventListener('touchmove', (e) => {
+    if (e.touches.length === 1 && drawing) {
+      if (isTextMode) return;
+      e.preventDefault();
+      const rect = canvas.getBoundingClientRect();
+      const touch = e.touches[0];
+      const x = (touch.clientX - rect.left - originX) / scale;
+      const y = (touch.clientY - rect.top - originY) / scale;
+      drawAt(x, y);
+    } else if (e.touches.length === 2 && isPanning) {
+      e.preventDefault();
+      const newDistance = getTouchDistance(e.touches);
+      const zoomFactor = newDistance / lastTouchDistance;
+      lastTouchDistance = newDistance;
+
+      scale *= zoomFactor;
+      scale = Math.max(0.5, Math.min(5, scale));
+
+      const centerX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+      const centerY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+
+      originX = centerX - panStart.x;
+      originY = centerY - panStart.y;
+
+      applyTransform();
+    }
+  });
+
+  function drawAt(x, y) {
+    ctx.lineWidth = parseInt(lineWidthSelect.value, 10);
+    ctx.lineCap = 'round';
+    ctx.strokeStyle = isErasing ? '#ffffff' : colorPicker.value;
+
+    ctx.lineTo(x, y);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+  }
+
+  clearBtn.addEventListener('click', () => {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  });
+
+  saveBtn.addEventListener('click', () => {
+    const link = document.createElement('a');
+    link.download = 'drawlist.png';
+    link.href = canvas.toDataURL();
+    link.click();
+  });
+
+  resetViewBtn.addEventListener('click', () => {
     scale = 1;
     originX = 0;
     originY = 0;
-    redraw();
-  };
-
-  // Добавление текста по клику
-  canvas.addEventListener('click', e => {
-    if (!textInput.value.trim()) return;
-
-    const x = (e.offsetX - originX) / scale;
-    const y = (e.offsetY - originY) / scale;
-
-    ctx.save();
-    ctx.setTransform(scale, 0, 0, scale, originX, originY);
-    ctx.fillStyle = colorPicker.value;
-    ctx.font = `${fontSizeInput.value}px ${fontSelect.value}`;
-    ctx.fillText(textInput.value, x, y);
-    ctx.restore();
+    applyTransform();
   });
 
-  // Показ иконки темы в левом верхнем углу
-  const themeIcon = document.getElementById('themeIcon');
+  function getTouchDistance(touches) {
+    const dx = touches[0].clientX - touches[1].clientX;
+    const dy = touches[0].clientY - touches[1].clientY;
+    return Math.sqrt(dx * dx + dy * dy);
+  }
+
+  function applyTransform() {
+    canvas.style.transform = `translate(${originX}px, ${originY}px) scale(${scale})`;
+    canvas.style.transformOrigin = '0 0';
+  }
+
+  function resizeCanvas() {
+    canvas.width = canvas.clientWidth;
+    canvas.height = canvas.clientWidth * 3 / 4;
+    applyTransform();
+  }
+
+  window.addEventListener('resize', resizeCanvas);
+  window.addEventListener('load', () => {
+    resizeCanvas();
+
+    // Перезапускаем анимацию кнопок при загрузке
+    document.querySelectorAll('#intro button').forEach(btn => {
+      btn.style.opacity = '0';
+      btn.style.animation = 'none';
+      setTimeout(() => {
+        btn.style.animation = '';
+        btn.classList.add('fade-in'); // для надежности
+      }, 10);
+    });
+  });
+
+  // --------- Тема и иконка ---------
+
   function updateThemeIcon() {
     const isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-    themeIcon.innerHTML = isDark
-      ? `<circle cx="32" cy="32" r="20" fill="yellow"/>` // Простая иконка солнца в темном режиме
-      : `<circle cx="32" cy="32" r="20" fill="black"/>`; // Иконка луны в светлом режиме
+    if (isDark) {
+      themeIcon.innerHTML = `
+        <circle cx="32" cy="32" r="15" fill="#f0e68c"/>
+        <circle cx="40" cy="28" r="15" fill="${getComputedStyle(document.body).backgroundColor}"/>
+      `;
+    } else {
+      themeIcon.innerHTML = `
+        <circle cx="32" cy="32" r="12" fill="#FFD93B"/>
+        <g stroke="#FFD93B" stroke-width="3">
+          <line x1="32" y1="4" x2="32" y2="16"/>
+          <line x1="32" y1="48" x2="32" y2="60"/>
+          <line x1="4" y1="32" x2="16" y2="32"/>
+          <line x1="48" y1="32" x2="60" y2="32"/>
+          <line x1="12" y1="12" x2="20" y2="20"/>
+          <line x1="44" y1="44" x2="52" y2="52"/>
+          <line x1="12" y1="52" x2="20" y2="44"/>
+          <line x1="44" y1="20" x2="52" y2="12"/>
+        </g>
+      `;
+    }
   }
+
   updateThemeIcon();
   window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateThemeIcon);
 </script>
