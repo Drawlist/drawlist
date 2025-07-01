@@ -3,9 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Drawlist с ластиком, масштабированием и звуком</title>
+  <title>Drawlist с ластиком, масштабированием и звуком кисти</title>
 
-  <!-- Поддержка тёмной/светлой темы -->
   <style>
     :root {
       --bg-color: white;
@@ -138,6 +137,9 @@
     <button id="resetViewBtn" style="background:#2196F3; margin-top:10px;">Сбросить масштаб</button>
   </div>
 
+  <!-- Звук кисти -->
+  <audio id="drawSound" preload="auto" src="https://actions.google.com/sounds/v1/foley/brush_stroke.ogg"></audio>
+
   <script>
     const intro = document.getElementById('intro');
     const drawBtn = document.getElementById('drawBtn');
@@ -149,6 +151,7 @@
     const resetViewBtn = document.getElementById('resetViewBtn');
     const colorPicker = document.getElementById('colorPicker');
     const lineWidthSelect = document.getElementById('lineWidthSelect');
+    const drawSound = document.getElementById('drawSound');
 
     const ctx = canvas.getContext('2d');
     let drawing = false;
@@ -157,29 +160,6 @@
     // Для звука
     let lastSoundTime = 0;
     const soundInterval = 100; // мс между звуками
-
-    // Web Audio API
-    const AudioContext = window.AudioContext || window.webkitAudioContext;
-    const audioCtx = new AudioContext();
-
-    function playDrawSound() {
-      if (audioCtx.state === 'suspended') {
-        audioCtx.resume();
-      }
-
-      const oscillator = audioCtx.createOscillator();
-      const gainNode = audioCtx.createGain();
-
-      oscillator.type = 'square';
-      oscillator.frequency.setValueAtTime(600, audioCtx.currentTime);
-      gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
-
-      oscillator.connect(gainNode);
-      gainNode.connect(audioCtx.destination);
-
-      oscillator.start();
-      oscillator.stop(audioCtx.currentTime + 0.05);
-    }
 
     // Для зума и панорамирования
     let scale = 1;
@@ -198,10 +178,18 @@
     window.addEventListener('resize', resizeCanvas);
     window.addEventListener('load', resizeCanvas);
 
-    drawBtn.addEventListener('click', () => {
+    drawBtn.addEventListener('click', async () => {
       intro.style.display = 'none';
       drawArea.style.display = 'flex';
       resizeCanvas();
+
+      try {
+        await drawSound.play(); // чтобы браузер разрешил звук
+        drawSound.pause();
+        drawSound.currentTime = 0;
+      } catch (e) {
+        // Игнорируем ошибки
+      }
     });
 
     eraserBtn.addEventListener('click', () => {
@@ -234,7 +222,6 @@
       drawAt(x, y);
     });
 
-    // Тач события для рисования и масштабирования
     canvas.addEventListener('touchstart', (e) => {
       if (e.touches.length === 1) {
         e.preventDefault();
@@ -293,7 +280,9 @@
     function drawAt(x, y) {
       const now = Date.now();
       if (now - lastSoundTime > soundInterval) {
-        playDrawSound();
+        // Сбрасываем звук и проигрываем заново
+        drawSound.currentTime = 0;
+        drawSound.play();
         lastSoundTime = now;
       }
 
