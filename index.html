@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Drawlist с ластиком, масштабированием и звуком кисти</title>
+  <title>Drawlist с ластиком, масштабированием, звуком кисти и текстом</title>
 
   <style>
     :root {
@@ -93,6 +93,16 @@
     label {
       margin-top: 10px;
       user-select: none;
+      display: inline-block;
+      margin-right: 15px;
+    }
+
+    input[type="text"], input[type="number"], select {
+      padding: 3px 5px;
+      font-size: 16px;
+      border-radius: 3px;
+      border: 1px solid #ccc;
+      vertical-align: middle;
     }
 
     @media (max-width: 600px) {
@@ -119,7 +129,7 @@
     
     <label>
       Цвет:
-      <input type="color" id="colorPicker" value="#000000" style="margin-left: 5px; padding: 3px; width: 40px; height: 30px; border: none;">
+      <input type="color" id="colorPicker" value="#000000" style="margin-left: 5px; width: 40px; height: 30px; border: none;">
     </label>
 
     <label>
@@ -129,6 +139,27 @@
         <option value="5" selected>Средняя</option>
         <option value="10">Толстая</option>
       </select>
+    </label>
+
+    <label style="margin-top:10px;">
+      Текст:
+      <input type="text" id="textInput" placeholder="Введите текст" style="margin-left: 5px; width: 150px;">
+    </label>
+
+    <label>
+      Шрифт:
+      <select id="fontSelect" style="margin-left: 5px; padding: 5px;">
+        <option value="Arial" selected>Arial</option>
+        <option value="Times New Roman">Times New Roman</option>
+        <option value="Courier New">Courier New</option>
+        <option value="Georgia">Georgia</option>
+        <option value="Verdana">Verdana</option>
+      </select>
+    </label>
+
+    <label>
+      Размер:
+      <input type="number" id="fontSizeInput" value="24" min="8" max="72" style="width: 60px; margin-left: 5px; padding: 3px;">
     </label>
 
     <button id="eraserBtn">Ластик</button>
@@ -153,6 +184,10 @@
     const lineWidthSelect = document.getElementById('lineWidthSelect');
     const drawSound = document.getElementById('drawSound');
 
+    const textInput = document.getElementById('textInput');
+    const fontSelect = document.getElementById('fontSelect');
+    const fontSizeInput = document.getElementById('fontSizeInput');
+
     const ctx = canvas.getContext('2d');
     let drawing = false;
     let isErasing = false;
@@ -168,6 +203,26 @@
     let lastTouchDistance = null;
     let isPanning = false;
     let panStart = { x: 0, y: 0 };
+
+    // Режим добавления текста
+    let isTextMode = false;
+
+    // Кнопка переключения режима текст/рисование
+    const textModeBtn = document.createElement('button');
+    textModeBtn.textContent = 'Добавить текст';
+    textModeBtn.style.marginTop = '10px';
+    drawArea.insertBefore(textModeBtn, resetViewBtn);
+
+    textModeBtn.addEventListener('click', () => {
+      isTextMode = !isTextMode;
+      if (isTextMode) {
+        textModeBtn.textContent = 'Режим рисования';
+        canvas.style.cursor = 'text';
+      } else {
+        textModeBtn.textContent = 'Добавить текст';
+        canvas.style.cursor = 'crosshair';
+      }
+    });
 
     function resizeCanvas() {
       canvas.width = canvas.clientWidth;
@@ -198,6 +253,7 @@
     });
 
     canvas.addEventListener('mousedown', (e) => {
+      if (isTextMode) return; // если текст, не рисуем мышью
       drawing = true;
       ctx.beginPath();
       const rect = canvas.getBoundingClientRect();
@@ -215,15 +271,42 @@
     });
 
     canvas.addEventListener('mousemove', (e) => {
-      if (!drawing) return;
+      if (!drawing || isTextMode) return;
       const rect = canvas.getBoundingClientRect();
       const x = (e.clientX - rect.left - originX) / scale;
       const y = (e.clientY - rect.top - originY) / scale;
       drawAt(x, y);
     });
 
+    canvas.addEventListener('click', (e) => {
+      if (!isTextMode) return;
+
+      const rect = canvas.getBoundingClientRect();
+      const x = (e.clientX - rect.left - originX) / scale;
+      const y = (e.clientY - rect.top - originY) / scale;
+
+      const fontSize = parseInt(fontSizeInput.value, 10) || 24;
+      const fontFamily = fontSelect.value || 'Arial';
+      const text = textInput.value.trim();
+
+      if (text === '') return;
+
+      ctx.save();
+      ctx.scale(1 / scale, 1 / scale); // компенсируем масштаб, чтобы текст был нормального размера
+      ctx.font = `${fontSize}px ${fontFamily}`;
+      ctx.fillStyle = colorPicker.value;
+      ctx.fillText(text, (x + originX) * scale, (y + originY) * scale);
+      ctx.restore();
+
+      // Сброс режима текста, чтобы не писать много раз подряд
+      isTextMode = false;
+      textModeBtn.textContent = 'Добавить текст';
+      canvas.style.cursor = 'crosshair';
+    });
+
     canvas.addEventListener('touchstart', (e) => {
       if (e.touches.length === 1) {
+        if (isTextMode) return;
         e.preventDefault();
         drawing = true;
         ctx.beginPath();
@@ -252,6 +335,7 @@
 
     canvas.addEventListener('touchmove', (e) => {
       if (e.touches.length === 1 && drawing) {
+        if (isTextMode) return;
         e.preventDefault();
         const rect = canvas.getBoundingClientRect();
         const touch = e.touches[0];
