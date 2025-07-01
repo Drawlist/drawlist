@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Drawlist с ластиком</title>
+  <title>Drawlist с ластиком и масштабированием</title>
 
   <!-- Поддержка тёмной/светлой темы -->
   <style>
@@ -65,6 +65,7 @@
       cursor: pointer;
       transition: background-color 0.3s ease;
       margin-top: 20px;
+      user-select: none;
     }
 
     button:hover {
@@ -75,6 +76,7 @@
       display: none;
       flex-direction: column;
       align-items: center;
+      touch-action: none; /* Важно для корректной работы жестов */
     }
 
     canvas {
@@ -82,11 +84,16 @@
       max-width: 800px;
       border: 2px solid #333;
       background: white;
-      touch-action: none;
+      touch-action: none; /* Отключаем системные жесты браузера на холсте */
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+      transform-origin: 0 0;
     }
 
     label {
       margin-top: 10px;
+      user-select: none;
     }
 
     @media (max-width: 600px) {
@@ -128,6 +135,7 @@
     <button id="eraserBtn">Ластик</button>
     <button id="clearBtn">Очистить</button>
     <button id="saveBtn">Скачать</button>
+    <button id="resetViewBtn" style="background:#2196F3; margin-top:10px;">Сбросить масштаб</button>
   </div>
 
   <script>
@@ -138,6 +146,7 @@
     const clearBtn = document.getElementById('clearBtn');
     const eraserBtn = document.getElementById('eraserBtn');
     const saveBtn = document.getElementById('saveBtn');
+    const resetViewBtn = document.getElementById('resetViewBtn');
     const colorPicker = document.getElementById('colorPicker');
     const lineWidthSelect = document.getElementById('lineWidthSelect');
 
@@ -145,93 +154,13 @@
     let drawing = false;
     let isErasing = false;
 
+    // Для зума и панорамирования
+    let scale = 1;
+    let originX = 0;
+    let originY = 0;
+    let lastTouchDistance = null;
+    let isPanning = false;
+    let panStart = { x: 0, y: 0 };
+
     function resizeCanvas() {
-      canvas.width = canvas.clientWidth;
-      canvas.height = canvas.clientWidth * 3 / 4;
-    }
-
-    window.addEventListener('resize', resizeCanvas);
-    window.addEventListener('load', resizeCanvas);
-
-    drawBtn.addEventListener('click', () => {
-      intro.style.display = 'none';
-      drawArea.style.display = 'flex';
-      resizeCanvas();
-    });
-
-    eraserBtn.addEventListener('click', () => {
-      isErasing = !isErasing;
-      eraserBtn.textContent = isErasing ? 'Рисовать' : 'Ластик';
-    });
-
-    canvas.addEventListener('mousedown', (e) => {
-      drawing = true;
-      ctx.beginPath();
-      const rect = canvas.getBoundingClientRect();
-      ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
-    });
-
-    canvas.addEventListener('mouseup', () => {
-      drawing = false;
-    });
-
-    canvas.addEventListener('mouseout', () => {
-      drawing = false;
-    });
-
-    canvas.addEventListener('mousemove', (e) => {
-      if (!drawing) return;
-      const rect = canvas.getBoundingClientRect();
-      drawAt(e.clientX - rect.left, e.clientY - rect.top);
-    });
-
-    canvas.addEventListener('touchstart', (e) => {
-      e.preventDefault();
-      drawing = true;
-      ctx.beginPath();
-      const rect = canvas.getBoundingClientRect();
-      const touch = e.touches[0];
-      ctx.moveTo(touch.clientX - rect.left, touch.clientY - rect.top);
-    });
-
-    canvas.addEventListener('touchend', (e) => {
-      e.preventDefault();
-      drawing = false;
-    });
-
-    canvas.addEventListener('touchmove', (e) => {
-      e.preventDefault();
-      if (!drawing) return;
-      const rect = canvas.getBoundingClientRect();
-      const touch = e.touches[0];
-      drawAt(touch.clientX - rect.left, touch.clientY - rect.top);
-    });
-
-    function drawAt(x, y) {
-      ctx.lineWidth = parseInt(lineWidthSelect.value, 10);
-      ctx.lineCap = 'round';
-      ctx.strokeStyle = isErasing ? '#ffffff' : colorPicker.value;
-
-      ctx.lineTo(x, y);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.moveTo(x, y);
-    }
-
-    clearBtn.addEventListener('click', () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-    });
-
-    saveBtn.addEventListener('click', () => {
-      const link = document.createElement('a');
-      link.download = 'drawlist.png';
-      link.href = canvas.toDataURL();
-      link.click();
-    });
-  </script>
-
-  <footer style="margin-top: 20px; font-size: 14px;">
-    © 2025 Все права защищены
-  </footer>
-</body>
-</html>
+      canvas.width
