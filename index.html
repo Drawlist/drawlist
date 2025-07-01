@@ -3,194 +3,68 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Drawlist с ластиком, масштабированием, звуком кисти и текстом</title>
-
+  <title>Drawlist простой</title>
   <style>
-    :root {
-      --bg-color: white;
-      --text-color: black;
-    }
-
-    @media (prefers-color-scheme: dark) {
-      :root {
-        --bg-color: #121212;
-        --text-color: #f1f1f1;
-      }
-    }
-
     body {
-      background-color: var(--bg-color);
-      color: var(--text-color);
-      transition: background-color 0.3s, color 0.3s;
-      margin: 0;
-      padding-top: 60px; /* Отступ для верхней панели */
+      margin: 0; padding: 0;
       height: 100vh;
       display: flex;
-      justify-content: center;
-      align-items: center;
       flex-direction: column;
-      font-family: sans-serif;
-    }
-
-    #topBanner {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 60px;
-      background-color: #ccc;
-      color: #333;
-      display: flex;
-      align-items: center;
       justify-content: center;
-      font-weight: 600;
-      font-size: 24px;
-      padding: 0 20px;
-      user-select: none;
-      z-index: 1000;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      align-items: center;
+      font-family: sans-serif;
+      background: #f9f9f9;
     }
-
-    .center-block {
+    #intro {
       text-align: center;
     }
-
-    .center-block p {
-      font-size: 60px;
+    #intro p {
+      font-size: 48px;
       font-weight: 700;
-      opacity: 0;
-      animation: fadeIn 2s ease-in-out forwards;
       margin-bottom: 20px;
     }
-
     button {
       padding: 10px 20px;
       font-size: 18px;
-      background-color: #4CAF50;
-      color: white;
+      margin: 5px;
       border: none;
       border-radius: 5px;
       cursor: pointer;
-      transition: background-color 0.3s ease;
-      margin-top: 20px;
+      background: #4CAF50;
+      color: white;
       user-select: none;
     }
-
-    button:hover {
-      background-color: #45a049;
+    button#authorsBtn {
+      background: #2196F3;
     }
-
-    #authorsBtn {
-      background-color: #2196F3;
-      margin-left: 10px;
-    }
-
-    #authorsBtn:hover {
-      background-color: #1976D2;
-    }
-
     #drawArea {
       display: none;
       flex-direction: column;
       align-items: center;
-      touch-action: none;
+      margin-top: 20px;
     }
-
     canvas {
-      width: 90vw;
-      max-width: 800px;
       border: 2px solid #333;
       background: white;
-      touch-action: none;
-      user-select: none;
-      -webkit-user-select: none;
-      -webkit-touch-callout: none;
-      transform-origin: 0 0;
-    }
-
-    label {
-      margin-top: 10px;
-      user-select: none;
-      display: inline-block;
-      margin-right: 15px;
-    }
-
-    input[type="text"], input[type="number"], select {
-      padding: 3px 5px;
-      font-size: 16px;
-      border-radius: 3px;
-      border: 1px solid #ccc;
-      vertical-align: middle;
-    }
-
-    @media (max-width: 600px) {
-      canvas {
-        max-width: 100%;
-      }
-
-      button {
-        font-size: 14px;
-        padding: 8px 16px;
-      }
+      width: 90vw;
+      max-width: 800px;
+      height: 600px;
     }
   </style>
 </head>
 <body>
 
-  <div id="topBanner">Начни рисовать</div>
-
-  <div class="center-block" id="intro">
+  <div id="intro">
     <p>drawlist</p>
     <button id="drawBtn">рисовать</button>
     <button id="authorsBtn">авторы</button>
   </div>
 
-  <div id="drawArea" style="display: none; flex-direction: column; align-items: center;">
+  <div id="drawArea">
     <canvas id="canvas"></canvas>
-    
-    <label>
-      Цвет:
-      <input type="color" id="colorPicker" value="#000000" style="margin-left: 5px; width: 40px; height: 30px; border: none;">
-    </label>
-
-    <label>
-      Толщина:
-      <select id="lineWidthSelect" style="margin-left: 5px; padding: 5px;">
-        <option value="2">Тонкая</option>
-        <option value="5" selected>Средняя</option>
-        <option value="10">Толстая</option>
-      </select>
-    </label>
-
-    <label style="margin-top:10px;">
-      Текст:
-      <input type="text" id="textInput" placeholder="Введите текст" style="margin-left: 5px; width: 150px;">
-    </label>
-
-    <label>
-      Шрифт:
-      <select id="fontSelect" style="margin-left: 5px; padding: 5px;">
-        <option value="Arial" selected>Arial</option>
-        <option value="Times New Roman">Times New Roman</option>
-        <option value="Courier New">Courier New</option>
-        <option value="Georgia">Georgia</option>
-        <option value="Verdana">Verdana</option>
-      </select>
-    </label>
-
-    <label>
-      Размер:
-      <input type="number" id="fontSizeInput" value="24" min="8" max="72" style="width: 60px; margin-left: 5px; padding: 3px;">
-    </label>
-
-    <button id="eraserBtn">Ластик</button>
     <button id="clearBtn">Очистить</button>
     <button id="saveBtn">Скачать</button>
-    <button id="resetViewBtn" style="background:#2196F3; margin-top:10px;">Сбросить масштаб</button>
   </div>
-
-  <!-- Звук кисти -->
-  <audio id="drawSound" preload="auto" src="https://actions.google.com/sounds/v1/foley/brush_stroke.ogg"></audio>
 
   <script>
     const intro = document.getElementById('intro');
@@ -199,205 +73,42 @@
     const drawArea = document.getElementById('drawArea');
     const canvas = document.getElementById('canvas');
     const clearBtn = document.getElementById('clearBtn');
-    const eraserBtn = document.getElementById('eraserBtn');
     const saveBtn = document.getElementById('saveBtn');
-    const resetViewBtn = document.getElementById('resetViewBtn');
-    const colorPicker = document.getElementById('colorPicker');
-    const lineWidthSelect = document.getElementById('lineWidthSelect');
-    const drawSound = document.getElementById('drawSound');
-
-    const textInput = document.getElementById('textInput');
-    const fontSelect = document.getElementById('fontSelect');
-    const fontSizeInput = document.getElementById('fontSizeInput');
-
-    const topBanner = document.getElementById('topBanner');
-
     const ctx = canvas.getContext('2d');
-    let drawing = false;
-    let isErasing = false;
 
-    // Для звука
-    let lastSoundTime = 0;
-    const soundInterval = 100; // мс между звуками
+    function resizeCanvas() {
+      canvas.width = canvas.clientWidth;
+      canvas.height = canvas.clientHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    window.addEventListener('load', resizeCanvas);
 
-    // Для зума и панорамирования
-    let scale = 1;
-    let originX = 0;
-    let originY = 0;
-    let lastTouchDistance = null;
-    let isPanning = false;
-    let panStart = { x: 0, y: 0 };
-
-    // Режим добавления текста
-    let isTextMode = false;
-
-    // Кнопка переключения режима текст/рисование
-    const textModeBtn = document.createElement('button');
-    textModeBtn.textContent = 'Добавить текст';
-    textModeBtn.style.marginTop = '10px';
-    drawArea.insertBefore(textModeBtn, resetViewBtn);
-
-    textModeBtn.addEventListener('click', () => {
-      isTextMode = !isTextMode;
-      if (isTextMode) {
-        textModeBtn.textContent = 'Режим рисования';
-        canvas.style.cursor = 'text';
-      } else {
-        textModeBtn.textContent = 'Добавить текст';
-        canvas.style.cursor = 'crosshair';
-      }
-    });
-
-    drawBtn.addEventListener('click', async () => {
+    drawBtn.addEventListener('click', () => {
       intro.style.display = 'none';
       drawArea.style.display = 'flex';
-      topBanner.style.display = 'none'; // Скрываем верхний баннер
       resizeCanvas();
-
-      try {
-        await drawSound.play(); // чтобы браузер разрешил звук
-        drawSound.pause();
-        drawSound.currentTime = 0;
-      } catch (e) {
-        // Игнорируем ошибки
-      }
     });
 
     authorsBtn.addEventListener('click', () => {
-      alert('Авторы проекта:\n\n- Адиль Чуйтенов 1\n- Кубат Чуйтенов 2\n- ...\n\nСпасибо за использование Drawlist!');
+      alert('Авторы проекта:\n\n- Адиль Чуйтенов 1\n- Кубат ЧУйтенов 2\n\nСпасибо за использование Drawlist!');
     });
 
-    eraserBtn.addEventListener('click', () => {
-      isErasing = !isErasing;
-      eraserBtn.textContent = isErasing ? 'Рисовать' : 'Ластик';
-    });
+    let drawing = false;
 
-    canvas.addEventListener('mousedown', (e) => {
-      if (isTextMode) return; // если текст, не рисуем мышью
+    canvas.addEventListener('mousedown', e => {
       drawing = true;
       ctx.beginPath();
       const rect = canvas.getBoundingClientRect();
-      const x = (e.clientX - rect.left - originX) / scale;
-      const y = (e.clientY - rect.top - originY) / scale;
-      ctx.moveTo(x, y);
+      ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
     });
-
-    canvas.addEventListener('mouseup', () => {
-      drawing = false;
-    });
-
-    canvas.addEventListener('mouseout', () => {
-      drawing = false;
-    });
-
-    canvas.addEventListener('mousemove', (e) => {
-      if (!drawing || isTextMode) return;
+    canvas.addEventListener('mouseup', () => drawing = false);
+    canvas.addEventListener('mouseout', () => drawing = false);
+    canvas.addEventListener('mousemove', e => {
+      if (!drawing) return;
       const rect = canvas.getBoundingClientRect();
-      const x = (e.clientX - rect.left - originX) / scale;
-      const y = (e.clientY - rect.top - originY) / scale;
-      drawAt(x, y);
-    });
-
-    canvas.addEventListener('click', (e) => {
-      if (!isTextMode) return;
-
-      const rect = canvas.getBoundingClientRect();
-      const x = (e.clientX - rect.left - originX) / scale;
-      const y = (e.clientY - rect.top - originY) / scale;
-
-      const fontSize = parseInt(fontSizeInput.value, 10) || 24;
-      const fontFamily = fontSelect.value || 'Arial';
-      const text = textInput.value.trim();
-
-      if (text === '') return;
-
-      ctx.save();
-      ctx.scale(1 / scale, 1 / scale); // компенсируем масштаб, чтобы текст был нормального размера
-      ctx.font = `${fontSize}px ${fontFamily}`;
-      ctx.fillStyle = colorPicker.value;
-      ctx.fillText(text, (x + originX) * scale, (y + originY) * scale);
-      ctx.restore();
-
-      // Сброс режима текста, чтобы не писать много раз подряд
-      isTextMode = false;
-      textModeBtn.textContent = 'Добавить текст';
-      canvas.style.cursor = 'crosshair';
-    });
-
-    canvas.addEventListener('touchstart', (e) => {
-      if (e.touches.length === 1) {
-        if (isTextMode) return;
-        e.preventDefault();
-        drawing = true;
-        ctx.beginPath();
-        const rect = canvas.getBoundingClientRect();
-        const touch = e.touches[0];
-        const x = (touch.clientX - rect.left - originX) / scale;
-        const y = (touch.clientY - rect.top - originY) / scale;
-        ctx.moveTo(x, y);
-      } else if (e.touches.length === 2) {
-        e.preventDefault();
-        lastTouchDistance = getTouchDistance(e.touches);
-        isPanning = true;
-        panStart.x = (e.touches[0].clientX + e.touches[1].clientX) / 2 - originX;
-        panStart.y = (e.touches[0].clientY + e.touches[1].clientY) / 2 - originY;
-      }
-    });
-
-    canvas.addEventListener('touchend', (e) => {
-      if (e.touches.length < 2) {
-        isPanning = false;
-      }
-      if (e.touches.length === 0) {
-        drawing = false;
-      }
-    });
-
-    canvas.addEventListener('touchmove', (e) => {
-      if (e.touches.length === 1 && drawing) {
-        if (isTextMode) return;
-        e.preventDefault();
-        const rect = canvas.getBoundingClientRect();
-        const touch = e.touches[0];
-        const x = (touch.clientX - rect.left - originX) / scale;
-        const y = (touch.clientY - rect.top - originY) / scale;
-        drawAt(x, y);
-      } else if (e.touches.length === 2 && isPanning) {
-        e.preventDefault();
-        const newDistance = getTouchDistance(e.touches);
-        const zoomFactor = newDistance / lastTouchDistance;
-        lastTouchDistance = newDistance;
-
-        scale *= zoomFactor;
-        scale = Math.max(0.5, Math.min(5, scale));
-
-        const centerX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
-        const centerY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
-
-        originX = centerX - panStart.x;
-        originY = centerY - panStart.y;
-
-        applyTransform();
-      }
-    });
-
-    function drawAt(x, y) {
-      const now = Date.now();
-      if (now - lastSoundTime > soundInterval) {
-        drawSound.currentTime = 0;
-        drawSound.play();
-        lastSoundTime = now;
-      }
-
-      ctx.lineWidth = parseInt(lineWidthSelect.value, 10);
-      ctx.lineCap = 'round';
-      ctx.strokeStyle = isErasing ? '#ffffff' : colorPicker.value;
-
-      ctx.lineTo(x, y);
+      ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
       ctx.stroke();
-      ctx.beginPath();
-      ctx.moveTo(x, y);
-    }
+    });
 
     clearBtn.addEventListener('click', () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -409,28 +120,7 @@
       link.href = canvas.toDataURL();
       link.click();
     });
-
-    resetViewBtn.addEventListener('click', () => {
-      scale = 1;
-      originX = 0;
-      originY = 0;
-      applyTransform();
-    });
-
-    function getTouchDistance(touches) {
-      const dx = touches[0].clientX - touches[1].clientX;
-      const dy = touches[0].clientY - touches[1].clientY;
-      return Math.sqrt(dx * dx + dy * dy);
-    }
-
-    function applyTransform() {
-      canvas.style.transform = `translate(${originX}px, ${originY}px) scale(${scale})`;
-      canvas.style.transformOrigin = '0 0';
-    }
   </script>
 
-  <footer style="margin-top: 20px; font-size: 14px;">
-    © 2025 Все права защищены
-  </footer>
 </body>
 </html>
