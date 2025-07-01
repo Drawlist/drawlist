@@ -23,7 +23,7 @@
       color: var(--text-color);
       transition: background-color 0.3s, color 0.3s;
       margin: 0;
-      padding-top: 40px; /* Отступ для верхней панели */
+      padding-top: 60px; /* Отступ для верхней панели */
       height: 100vh;
       display: flex;
       justify-content: center;
@@ -37,14 +37,15 @@
       top: 0;
       left: 0;
       width: 100%;
-      height: 40px;
+      height: 60px;
       background-color: #ccc;
       color: #333;
       display: flex;
       align-items: center;
       justify-content: center;
       font-weight: 600;
-      font-size: 18px;
+      font-size: 24px;
+      padding: 0 20px;
       user-select: none;
       z-index: 1000;
       box-shadow: 0 2px 5px rgba(0,0,0,0.1);
@@ -209,6 +210,8 @@
     const fontSelect = document.getElementById('fontSelect');
     const fontSizeInput = document.getElementById('fontSizeInput');
 
+    const topBanner = document.getElementById('topBanner');
+
     const ctx = canvas.getContext('2d');
     let drawing = false;
     let isErasing = false;
@@ -257,6 +260,7 @@
     drawBtn.addEventListener('click', async () => {
       intro.style.display = 'none';
       drawArea.style.display = 'flex';
+      topBanner.style.display = 'none'; // Скрываем верхний баннер
       resizeCanvas();
 
       try {
