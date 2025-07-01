@@ -1,323 +1,237 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Drawlist с ластиком</title>
-<style>
-<style>
-  /* --- Добавлено: Поддержка тёмной/светлой темы --- */
-  :root {
-    --bg-color: white;
-    --text-color: black;
-  }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Drawlist с ластиком</title>
 
-  @media (prefers-color-scheme: dark) {
+  <!-- Поддержка тёмной/светлой темы -->
+  <style>
     :root {
-      --bg-color: #121212;
-      --text-color: #f1f1f1;
+      --bg-color: white;
+      --text-color: black;
     }
-  }
 
-  body {
-    background-color: var(--bg-color);
-    color: var(--text-color);
-    transition: background-color 0.3s, color 0.3s;
-  }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg-color: #121212;
+        --text-color: #f1f1f1;
+      }
+    }
 
-  /* --- Существующие стили --- */
-  body {
-    margin: 0;
-    height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background-color: var(--bg-color); /* изменено */
-    flex-direction: column;
-    font-family: sans-serif;
-    color: var(--text-color); /* добавлено */
-  }
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      transition: background-color 0.3s, color 0.3s;
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      font-family: sans-serif;
+    }
 
-  .center-block {
-    text-align: center;
-  }
+    .center-block {
+      text-align: center;
+    }
 
-  .center-block p {
-    font-size: 60px;
-    font-weight: 700;
-    opacity: 0;
-    animation: fadeIn 2s ease-in-out forwards;
-    margin-bottom: 20px;
-  }
-
-  @keyframes fadeIn {
-    from {
+    .center-block p {
+      font-size: 60px;
+      font-weight: 700;
       opacity: 0;
-      transform: translateY(30px);
+      animation: fadeIn 2s ease-in-out forwards;
+      margin-bottom: 20px;
     }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
 
-  button {
-    padding: 10px 20px;
-    font-size: 18px;
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    margin-top: 20px;
-  }
-
-  button:hover {
-    background-color: #45a049;
-  }
-
-  #drawArea {
-    display: none;
-    flex-direction: column;
-    align-items: center;
-  }
-
-  canvas {
-    width: 90vw;
-    max-width: 800px;
-    border: 2px solid #333;
-    background: white;
-    touch-action: none;
-  }
-
-  label {
-    margin-top: 10px;
-  }
-
-  @media (max-width: 600px) {
-    canvas {
-      max-width: 100%;
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     button {
-      font-size: 14px;
-      padding: 8px 16px;
+      padding: 10px 20px;
+      font-size: 18px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      margin-top: 20px;
     }
-  }
-</style> 
-  body {
-    margin: 0;
-    height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background-color: #f9f9f9;
-    flex-direction: column;
-    font-family: sans-serif;
-  }
 
-  .center-block {
-    text-align: center;
-  }
-
-  .center-block p {
-    font-size: 60px;
-    font-weight: 700;
-    opacity: 0;
-    animation: fadeIn 2s ease-in-out forwards;
-    margin-bottom: 20px;
-  }
-
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-      transform: translateY(30px);
+    button:hover {
+      background-color: #45a049;
     }
-    to {
-      opacity: 1;
-      transform: translateY(0);
+
+    #drawArea {
+      display: none;
+      flex-direction: column;
+      align-items: center;
     }
-  }
 
-  button {
-    padding: 10px 20px;
-    font-size: 18px;
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    margin-top: 20px;
-  }
-
-  button:hover {
-    background-color: #45a049;
-  }
-
-  #drawArea {
-    display: none;
-    flex-direction: column;
-    align-items: center;
-  }
-
-  canvas {
-    width: 90vw;
-    max-width: 800px;
-    border: 2px solid #333;
-    background: white;
-    touch-action: none;
-  }
-
-  label {
-    margin-top: 10px;
-  }
-
-  @media (max-width: 600px) {
     canvas {
-      max-width: 100%;
+      width: 90vw;
+      max-width: 800px;
+      border: 2px solid #333;
+      background: white;
+      touch-action: none;
     }
 
-    button {
-      font-size: 14px;
-      padding: 8px 16px;
+    label {
+      margin-top: 10px;
     }
-  }
-</style>
+
+    @media (max-width: 600px) {
+      canvas {
+        max-width: 100%;
+      }
+
+      button {
+        font-size: 14px;
+        padding: 8px 16px;
+      }
+    }
+  </style>
 </head>
 <body>
 
-<div class="center-block" id="intro">
-  <p>drawlist</p>
-  <button id="drawBtn">рисовать</button>
-</div>
+  <div class="center-block" id="intro">
+    <p>drawlist</p>
+    <button id="drawBtn">рисовать</button>
+  </div>
 
-<div id="drawArea" style="display: none; flex-direction: column; align-items: center;">
-  <canvas id="canvas"></canvas>
-  
-  <label>
-    Цвет:
-    <input type="color" id="colorPicker" value="#000000" style="margin-left: 5px; padding: 3px; width: 40px; height: 30px; border: none;">
-  </label>
+  <div id="drawArea" style="display: none; flex-direction: column; align-items: center;">
+    <canvas id="canvas"></canvas>
+    
+    <label>
+      Цвет:
+      <input type="color" id="colorPicker" value="#000000" style="margin-left: 5px; padding: 3px; width: 40px; height: 30px; border: none;">
+    </label>
 
-  <label>
-    Толщина:
-    <select id="lineWidthSelect" style="margin-left: 5px; padding: 5px;">
-      <option value="2">Тонкая</option>
-      <option value="5" selected>Средняя</option>
-      <option value="10">Толстая</option>
-    </select>
-  </label>
+    <label>
+      Толщина:
+      <select id="lineWidthSelect" style="margin-left: 5px; padding: 5px;">
+        <option value="2">Тонкая</option>
+        <option value="5" selected>Средняя</option>
+        <option value="10">Толстая</option>
+      </select>
+    </label>
 
-  <button id="eraserBtn">Ластик</button>
-  <button id="clearBtn">Очистить</button>
-  <button id="saveBtn">Скачать</button>
-</div>
+    <button id="eraserBtn">Ластик</button>
+    <button id="clearBtn">Очистить</button>
+    <button id="saveBtn">Скачать</button>
+  </div>
 
-<script>
-  const intro = document.getElementById('intro');
-  const drawBtn = document.getElementById('drawBtn');
-  const drawArea = document.getElementById('drawArea');
-  const canvas = document.getElementById('canvas');
-  const clearBtn = document.getElementById('clearBtn');
-  const eraserBtn = document.getElementById('eraserBtn');
-  const saveBtn = document.getElementById('saveBtn');
-  const colorPicker = document.getElementById('colorPicker');
-  const lineWidthSelect = document.getElementById('lineWidthSelect');
+  <script>
+    const intro = document.getElementById('intro');
+    const drawBtn = document.getElementById('drawBtn');
+    const drawArea = document.getElementById('drawArea');
+    const canvas = document.getElementById('canvas');
+    const clearBtn = document.getElementById('clearBtn');
+    const eraserBtn = document.getElementById('eraserBtn');
+    const saveBtn = document.getElementById('saveBtn');
+    const colorPicker = document.getElementById('colorPicker');
+    const lineWidthSelect = document.getElementById('lineWidthSelect');
 
-  const ctx = canvas.getContext('2d');
-  let drawing = false;
-  let isErasing = false;
+    const ctx = canvas.getContext('2d');
+    let drawing = false;
+    let isErasing = false;
 
-  function resizeCanvas() {
-    canvas.width = canvas.clientWidth;
-    canvas.height = canvas.clientWidth * 3 / 4;
-  }
+    function resizeCanvas() {
+      canvas.width = canvas.clientWidth;
+      canvas.height = canvas.clientWidth * 3 / 4;
+    }
 
-  window.addEventListener('resize', resizeCanvas);
-  window.addEventListener('load', resizeCanvas);
+    window.addEventListener('resize', resizeCanvas);
+    window.addEventListener('load', resizeCanvas);
 
-  drawBtn.addEventListener('click', () => {
-    intro.style.display = 'none';
-    drawArea.style.display = 'flex';
-    resizeCanvas();
-  });
+    drawBtn.addEventListener('click', () => {
+      intro.style.display = 'none';
+      drawArea.style.display = 'flex';
+      resizeCanvas();
+    });
 
-  eraserBtn.addEventListener('click', () => {
-    isErasing = !isErasing;
-    eraserBtn.textContent = isErasing ? 'Рисовать' : 'Ластик';
-  });
+    eraserBtn.addEventListener('click', () => {
+      isErasing = !isErasing;
+      eraserBtn.textContent = isErasing ? 'Рисовать' : 'Ластик';
+    });
 
-  canvas.addEventListener('mousedown', (e) => {
-    drawing = true;
-    ctx.beginPath();
-    const rect = canvas.getBoundingClientRect();
-    ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
-  });
+    canvas.addEventListener('mousedown', (e) => {
+      drawing = true;
+      ctx.beginPath();
+      const rect = canvas.getBoundingClientRect();
+      ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+    });
 
-  canvas.addEventListener('mouseup', () => {
-    drawing = false;
-  });
+    canvas.addEventListener('mouseup', () => {
+      drawing = false;
+    });
 
-  canvas.addEventListener('mouseout', () => {
-    drawing = false;
-  });
+    canvas.addEventListener('mouseout', () => {
+      drawing = false;
+    });
 
-  canvas.addEventListener('mousemove', (e) => {
-    if (!drawing) return;
-    const rect = canvas.getBoundingClientRect();
-    drawAt(e.clientX - rect.left, e.clientY - rect.top);
-  });
+    canvas.addEventListener('mousemove', (e) => {
+      if (!drawing) return;
+      const rect = canvas.getBoundingClientRect();
+      drawAt(e.clientX - rect.left, e.clientY - rect.top);
+    });
 
-  canvas.addEventListener('touchstart', (e) => {
-    e.preventDefault();
-    drawing = true;
-    ctx.beginPath();
-    const rect = canvas.getBoundingClientRect();
-    const touch = e.touches[0];
-    ctx.moveTo(touch.clientX - rect.left, touch.clientY - rect.top);
-  });
+    canvas.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      drawing = true;
+      ctx.beginPath();
+      const rect = canvas.getBoundingClientRect();
+      const touch = e.touches[0];
+      ctx.moveTo(touch.clientX - rect.left, touch.clientY - rect.top);
+    });
 
-  canvas.addEventListener('touchend', (e) => {
-    e.preventDefault();
-    drawing = false;
-  });
+    canvas.addEventListener('touchend', (e) => {
+      e.preventDefault();
+      drawing = false;
+    });
 
-  canvas.addEventListener('touchmove', (e) => {
-    e.preventDefault();
-    if (!drawing) return;
-    const rect = canvas.getBoundingClientRect();
-    const touch = e.touches[0];
-    drawAt(touch.clientX - rect.left, touch.clientY - rect.top);
-  });
+    canvas.addEventListener('touchmove', (e) => {
+      e.preventDefault();
+      if (!drawing) return;
+      const rect = canvas.getBoundingClientRect();
+      const touch = e.touches[0];
+      drawAt(touch.clientX - rect.left, touch.clientY - rect.top);
+    });
 
-  function drawAt(x, y) {
-    ctx.lineWidth = parseInt(lineWidthSelect.value, 10);
-    ctx.lineCap = 'round';
-    ctx.strokeStyle = isErasing ? '#ffffff' : colorPicker.value;
+    function drawAt(x, y) {
+      ctx.lineWidth = parseInt(lineWidthSelect.value, 10);
+      ctx.lineCap = 'round';
+      ctx.strokeStyle = isErasing ? '#ffffff' : colorPicker.value;
 
-    ctx.lineTo(x, y);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(x, y);
-  }
+      ctx.lineTo(x, y);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+    }
 
-  clearBtn.addEventListener('click', () => {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-  });
+    clearBtn.addEventListener('click', () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    });
 
-  saveBtn.addEventListener('click', () => {
-    const link = document.createElement('a');
-    link.download = 'drawlist.png';
-    link.href = canvas.toDataURL();
-    link.click();
-  });
-</script>
+    saveBtn.addEventListener('click', () => {
+      const link = document.createElement('a');
+      link.download = 'drawlist.png';
+      link.href = canvas.toDataURL();
+      link.click();
+    });
+  </script>
 
+  <footer style="margin-top: 20px; font-size: 14px;">
+    © 2025 Все права защищены
+  </footer>
 </body>
 </html>
-
-<footer>
-  2025 все права защищены
-</footer>
