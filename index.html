@@ -179,10 +179,19 @@
     window.addEventListener('resize', resizeCanvas);
     window.addEventListener('load', resizeCanvas);
 
-    drawBtn.addEventListener('click', () => {
+    drawBtn.addEventListener('click', async () => {
       intro.style.display = 'none';
       drawArea.style.display = 'flex';
       resizeCanvas();
+
+      try {
+        // Разрешаем воспроизведение звука
+        await drawSound.play();
+        drawSound.pause();
+        drawSound.currentTime = 0;
+      } catch (e) {
+        // Ошибки игнорируем
+      }
     });
 
     eraserBtn.addEventListener('click', () => {
