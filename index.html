@@ -9,14 +9,12 @@
       --bg-color: white;
       --text-color: black;
     }
-
     @media (prefers-color-scheme: dark) {
       :root {
         --bg-color: #121212;
         --text-color: #f1f1f1;
       }
     }
-
     body {
       background-color: var(--bg-color);
       color: var(--text-color);
@@ -26,7 +24,6 @@
       user-select: none;
       scroll-behavior: smooth;
     }
-
     #topBanner {
       position: fixed;
       top: 0;
@@ -43,7 +40,6 @@
       z-index: 1000;
       box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
-
     #themeIcon {
       position: fixed;
       top: 10px;
@@ -53,12 +49,10 @@
       z-index: 1100;
       pointer-events: none;
     }
-
     .center-block {
       text-align: center;
       margin-top: 100px;
     }
-
     .center-block p {
       font-size: 60px;
       font-weight: 700;
@@ -66,7 +60,6 @@
       animation: fadeIn 2s ease-in-out forwards;
       margin-bottom: 20px;
     }
-
     button {
       padding: 10px 20px;
       font-size: 18px;
@@ -80,18 +73,14 @@
       opacity: 0;
       animation: fadeIn 1s ease forwards;
     }
-
     button:hover {
       background-color: #45a049;
       transform: translateY(-2px);
     }
-
     #authorsBtn { background-color: #2196F3; }
     #authorsBtn:hover { background-color: #1976D2; }
-
     #descBtn { background-color: #FF9800; }
     #descBtn:hover { background-color: #e68a00; }
-
     #toTopBtn {
       position: fixed;
       bottom: 30px;
@@ -108,11 +97,9 @@
       box-shadow: 0 0 10px rgba(0,0,0,0.3);
       transition: background-color 0.3s;
     }
-
     #toTopBtn:hover {
       background-color: #000;
     }
-
     #description {
       opacity: 0;
       transform: translateY(30px);
@@ -123,19 +110,16 @@
       font-size: 18px;
       border-top: 2px solid #888;
     }
-
     #description.visible {
       opacity: 1;
       transform: translateY(0);
     }
-
     #drawArea {
       display: none;
       flex-direction: column;
       align-items: center;
       padding: 30px 10px;
     }
-
     canvas {
       width: 90vw;
       max-width: 800px;
@@ -144,14 +128,12 @@
       margin: 20px 0;
       touch-action: none;
     }
-
     label {
       margin-top: 10px;
       user-select: none;
       display: inline-block;
       margin-right: 15px;
     }
-
     input[type="text"],
     input[type="number"],
     select {
@@ -160,18 +142,21 @@
       border-radius: 4px;
       border: 1px solid #ccc;
     }
-
     footer {
       text-align: center;
       font-size: 14px;
       margin: 60px 0 20px;
     }
-
+    #previewImage {
+      display: block;
+      max-width: 90vw;
+      margin: 40px auto;
+      border: 1px solid #888;
+    }
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(30px); }
       to { opacity: 1; transform: translateY(0); }
     }
-
     @media (max-width: 600px) {
       canvas { max-width: 100%; }
       button { font-size: 15px; }
@@ -179,20 +164,16 @@
   </style>
 </head>
 <body>
-
   <div id="topBanner">Начни рисовать</div>
   <svg id="themeIcon" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg"></svg>
-
   <div class="center-block" id="intro">
     <p>drawlist</p>
     <button id="drawBtn">рисовать</button>
     <button id="authorsBtn">авторы</button>
     <button id="descBtn">описание</button>
   </div>
-
   <div id="drawArea">
     <canvas id="canvas"></canvas>
-
     <label>Цвет: <input type="color" id="colorPicker" value="#000000"></label>
     <label>Толщина:
       <select id="lineWidthSelect">
@@ -212,12 +193,11 @@
       </select>
     </label>
     <label>Размер: <input type="number" id="fontSizeInput" value="24" min="8" max="72"></label>
-
     <button id="eraserBtn">Ластик</button>
     <button id="clearBtn">Очистить</button>
     <button id="saveBtn">Скачать</button>
   </div>
-
+  <img id="previewImage" src="Drawlist - Google Chrome 02.07.2025 19_56_31.png" alt="Скриншот сайта">
   <section id="description">
     <h2>Описание</h2>
     <p>
@@ -225,11 +205,8 @@
       использовать ластик, добавлять текст с разными шрифтами, настраивать цвет и толщину линии, а также скачивать своё изображение.
     </p>
   </section>
-
   <button id="toTopBtn" title="Наверх">↑</button>
-
   <footer>© 2025 Все права защищены</footer>
-
   <script>
     const drawBtn = document.getElementById('drawBtn');
     const authorsBtn = document.getElementById('authorsBtn');
@@ -240,17 +217,15 @@
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
     const topBanner = document.getElementById('topBanner');
-
+    const previewImage = document.getElementById('previewImage');
     const colorPicker = document.getElementById('colorPicker');
     const lineWidthSelect = document.getElementById('lineWidthSelect');
     const eraserBtn = document.getElementById('eraserBtn');
     const clearBtn = document.getElementById('clearBtn');
     const saveBtn = document.getElementById('saveBtn');
-
     const textInput = document.getElementById('textInput');
     const fontSelect = document.getElementById('fontSelect');
     const fontSizeInput = document.getElementById('fontSizeInput');
-
     let drawing = false;
     let isErasing = false;
 
@@ -312,6 +287,7 @@
       intro.style.display = 'none';
       drawArea.style.display = 'flex';
       topBanner.style.display = 'none';
+      previewImage.style.display = 'none';
       window.scrollTo({ top: 0, behavior: 'smooth' });
     });
 
@@ -322,6 +298,7 @@
     descBtn.addEventListener('click', () => {
       document.getElementById('description').scrollIntoView({ behavior: 'smooth' });
       document.getElementById('description').classList.add('visible');
+      previewImage.style.display = 'none';
     });
 
     window.addEventListener('scroll', () => {
@@ -332,6 +309,5 @@
       window.scrollTo({ top: 0, behavior: 'smooth' });
     });
   </script>
-
 </body>
 </html>
