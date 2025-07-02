@@ -218,7 +218,6 @@
     <button id="saveBtn">Скачать</button>
   </div>
 
-  <!-- Описание сайта -->
   <section id="description">
     <h2>Описание</h2>
     <p>
@@ -227,7 +226,6 @@
     </p>
   </section>
 
-  <!-- Кнопка "Наверх" -->
   <button id="toTopBtn" title="Наверх">↑</button>
 
   <footer>© 2025 Все права защищены</footer>
@@ -241,6 +239,7 @@
     const drawArea = document.getElementById('drawArea');
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
+    const topBanner = document.getElementById('topBanner');
 
     const colorPicker = document.getElementById('colorPicker');
     const lineWidthSelect = document.getElementById('lineWidthSelect');
@@ -312,6 +311,7 @@
     drawBtn.addEventListener('click', () => {
       intro.style.display = 'none';
       drawArea.style.display = 'flex';
+      topBanner.style.display = 'none';
       window.scrollTo({ top: 0, behavior: 'smooth' });
     });
 
